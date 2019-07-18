@@ -1,0 +1,135 @@
+* {
+    margin: 0;
+}
+
+
+die:before {
+	content: "";
+	background-image: url(SpriteSheet.png);
+	background-repeat: no-repeat;
+	image-rendering: pixelated;
+	background-origin: content-box;
+	background-clip: content-box;
+	background-size: 6144px 6144px;
+	background-color: inherit;
+	background-position: inherit;
+	width: 90px;
+	height: 99px;
+	margin: 10px 19px 19px 19px;
+}
+die {
+	position: relative;
+	width: 128px;
+	height: 128px;
+	font-size: 1em;
+}
+die:before {
+	display: block;
+	background-blend-mode: multiply;
+    -webkit-mask-image: url(SpriteSheet.png);
+    mask-image: url(SpriteSheet.png);
+    -webkit-mask-size: 6144px 6144px;
+	mask-size: 6144px 6144px;
+    -webkit-mask-origin: content-box;
+    mask-origin: content-box;
+}
+die:after {
+	content: attr(data-text);
+	position: absolute;
+	width: 128px;
+	text-align: center;
+	bottom: 1px;
+	font-size: 1em;
+	line-height: 1em;
+}
+die[data-name="empty"]:before {
+	filter: brightness(0%);
+	display: block;
+	opacity: 0.35;
+}
+
+#dice-bar {
+	position: absolute;
+	bottom: 0;
+	margin: 24px;
+}
+
+dice-bar, die-slot, die-selector {
+	border: solid 6px grey;
+	border-radius: 12px;
+}
+
+dice-bar {
+	display: block;
+	width: fit-content;
+}
+die-slot {
+	display: block;
+	float: left;
+	margin: 8px;
+	width: 128px;
+	height: 128px;
+	cursor: pointer;
+}
+
+die-selector die {
+	cursor: pointer;
+}
+die-selector {
+	display: block;
+	width: 512px;
+	z-index: 1;
+	position: absolute;
+	background-color: white;
+	bottom: 100%;
+}
+die-selector-column {
+	display: inline-block;
+	position: relative;
+}
+die-selector-column:nth-child(3):after {
+	content: "";
+	position: absolute;
+	width: 6px;
+	height: 100%;
+	background-color: grey;
+	top: 0;
+	left: -3px;
+}
+die-selector-column die:not(:first-child):before {
+	margin-top: 29px;
+}
+die-selector-clear-row {
+	display: block;
+	position: relative;
+	border-bottom: solid 6px grey;
+}
+die-selector-clear-row > die {
+    left: calc(50% - 128px/2);
+}
+die-slot die-selector {
+	margin-bottom: -4px;
+	margin-left: -6px;
+	line-height: 0;
+}
+die-slot die-selector:before {
+	content: "";
+	position: absolute;
+	width: 140px;
+	height: 28px;
+	background: white;
+	bottom: -22px;
+	left: -6px;
+	border-left: solid 6px grey;
+}
+die-slot die-selector:after {
+	content: "";
+	position: absolute;
+	width: 6px;
+	height: 16px;
+	bottom: -22px;
+	left: 128px;
+	border-left: solid 6px grey;
+	border-top: solid 6px grey;
+	border-top-left-radius: 12px;
+}
