@@ -32,6 +32,7 @@ die:before {
 	mask-size: 6144px 6144px;
     -webkit-mask-origin: content-box;
     mask-origin: content-box;
+	cursor: pointer;
 }
 die:after {
 	content: attr(data-text);
@@ -69,16 +70,12 @@ die-slot {
 	margin: 8px;
 	width: 128px;
 	height: 128px;
-	cursor: pointer;
-}
-
-die-selector die {
-	cursor: pointer;
+	background-color: white;
+	position: relative;
 }
 die-selector {
 	display: block;
 	width: 512px;
-	z-index: 1;
 	position: absolute;
 	background-color: white;
 	bottom: 100%;
@@ -87,28 +84,21 @@ die-selector-column {
 	display: inline-block;
 	position: relative;
 }
-die-selector-column:nth-child(3):after {
-	content: "";
-	position: absolute;
-	width: 6px;
-	height: 100%;
-	background-color: grey;
-	top: 0;
-	left: -3px;
-}
 die-selector-column die:not(:first-child):before {
 	margin-top: 29px;
 }
-die-selector-clear-row {
-	display: block;
-	position: relative;
-	border-bottom: solid 6px grey;
-}
-die-selector-clear-row > die {
-    left: calc(50% - 128px/2);
+die-selector-overlay {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	background: #0004;
+	left: 0;
+	top: 0;
+	z-index: 100;
+	cursor: pointer;
 }
 die-slot die-selector {
-	margin-bottom: -4px;
+	margin-bottom: 10px;
 	margin-left: -6px;
 	line-height: 0;
 }
@@ -116,8 +106,8 @@ die-slot die-selector:before {
 	content: "";
 	position: absolute;
 	width: 140px;
-	height: 28px;
-	background: white;
+	height: 30px;
+	background: linear-gradient(180deg, white 13px, transparent 13px), linear-gradient(270deg, transparent 7px, white 7px);
 	bottom: -22px;
 	left: -6px;
 	border-left: solid 6px grey;
@@ -125,9 +115,9 @@ die-slot die-selector:before {
 die-slot die-selector:after {
 	content: "";
 	position: absolute;
-	width: 6px;
-	height: 16px;
-	bottom: -22px;
+	width: 7px;
+	height: 17px;
+	bottom: -23px;
 	left: 128px;
 	border-left: solid 6px grey;
 	border-top: solid 6px grey;

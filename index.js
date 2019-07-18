@@ -1,25 +1,18 @@
 
 
-function init(die) {
-	die.style.backgroundPosition = Math.floor(Math.random() * 6) * -90 + "px " + Math.floor(Math.random() * 4) * -99	 + "px"
-}
 
-for (let die of [...document.getElementsByTagName("dice")])
-	init(die)
-
-
-
-
-function addDie(prot, target) {
+function addDie(prototype, target) {
 	let die = document.createElement("die");
 
-	die.style.backgroundColor = prot.color;
-	die.setAttribute("data-name", prot.name);
-	die.setAttribute("data-text", prot.text);
+	die.style.backgroundColor = prototype.color;
+	die.setAttribute("data-name", prototype.name);
+	die.setAttribute("data-text", prototype.text);
+
+	if (die.type != "empty")
+		die.style.backgroundPosition = Math.floor(Math.random() * 6) * -90 + "px " + Math.floor(Math.random() * 4) * -99 + "px";
 
 	target.appendChild(die);
 
-	init(die);
 	return die;
 }
 
@@ -44,7 +37,8 @@ function addDieType(name, type, min, max, mul, color, text) {
 		max: max,
 		mul: mul,
 		color: color,
-		text: text
+		text: text,
+		risky: type == "atk" && min == 1,
 	};
 	dice[type][name] = die;
 	diceOrder.push(die);
@@ -71,34 +65,161 @@ addDieType("p2"		, "mul", 3, 6, 1, "#A88621", "mult > 2");
 addDieType("p3"		, "mul", 4, 6, 1, "#C09A27", "mult > 3");
 
 
-function createSelector(target) {
+let selectorExists = undefined;
+function createSelector(slot) {
+	if (selectorExists)
+		return;
 	let selector = document.createElement("die-selector");
-	let clearRow = document.createElement("die-selector-clear-row");
-	let clearDie = addDie(dice.empty, clearRow);
-	clearDie.setAttribute("data-text", "remove die");
-	selector.appendChild(clearRow);
+	const target = slot.el;
+	selectorExists = selector;
 	for (let j = 0; j < diceOrder.length; j += 4) {
 		let column = document.createElement("die-selector-column");
-		for (let i = j; i < j + 4; ++i)
-			addDie(diceOrder[i], column);
+		for (let i = j; i < j + 4; ++i) {
+			const dieButton = diceOrder[i] == slot.die ? dice.empty : diceOrder[i];
+			const dieButtonEl = addDie(dieButton, column);
+			dieButtonEl.onclick = function(ev) {
+				let originalDieEl = slot.dieEl;
+				let originalDie = slot.die;
+				slot.el.removeChild(originalDieEl);
+				slot.die = dieButton;
+				slot.dieEl = dieButtonEl;
+				slot.el.appendChild(slot.dieEl);
+				dieButtonEl.onclick = undefined;
+				destructSelector(ev);
+				go(ex => {
+					console.error(ex);
+					alert(ex);
+					slot.el.removeChild(slot.dieEl);
+					slot.die = originalDie;
+					slot.dieEl = originalDieEl;
+					slot.el.appendChild(slot.dieEl);
+				});
+			};
+			slot.dieEl.onclick = function(ev) {
+				slot.dieEl.onclick = undefined;
+				destructSelector(ev);
+			}
+			
+			// if (dieButton == dice.empty)
+			// 	dieButton.setAttribute("data-text", "clear die");
+
+		}
+
 		selector.appendChild(column);
 	}
 
+	let bgOverlay = document.createElement("die-selector-overlay");
+	target.parentNode.appendChild(bgOverlay);
+	const oldZIndex = target.style.zIndex;
+	target.style.zIndex = 101;
+	bgOverlay.onclick = destructSelector;
 	target.insertBefore(selector, target.firstChild);
 
 	return selector;
+
+
+	function destructSelector(ev) {
+		target.removeChild(selector);
+		target.parentNode.removeChild(bgOverlay);
+		target.style.zIndex = oldZIndex;
+		selectorExists = undefined;
+		ev.stopPropagation();
+	}
 }
+
 
 window.onload = function() {
 
-	let diceBar = document.getElementById("dice-bar");
-	for (let i = 0; i < diceBar.children.length; i++) {
-		const dieSlot = diceBar.children[i], prot = i ? dice.empty : dice.atk.core;
+	let bar = {
+		el: document.getElementById("dice-bar"),
+		dice: [],
+	}
+	for (let i = 0; i < bar.el.children.length; i++) {
+		const slot = {
+			die: i ? dice.empty : dice.atk.core,
+			el: bar.el.children[i],
+		};
 
-		addDie(prot, dieSlot);
+		slot.dieEl = addDie(slot.die, slot.el);
 
-		dieSlot.onclick = function() {
-			createSelector(dieSlot);
+		slot.el.onclick = function() {
+			createSelector(slot);
+		};
+
+		bar.dice.push(slot);
+	}
+
+	window.bar = bar;
+
+	go();
+};
+
+
+
+
+
+
+
+function go(cb_invalid) {
+
+
+	let bar = window.bar;
+
+	let allDice = bar.dice.map(d => d.die);
+	let safeDice = allDice.filter(d => d.type != "empty" && !d.risky).sort((a, b) => (a.type == "mul") - (b.type == "mul") || a.min - b.min || a.max - b.max)
+	let riskyDice = allDice.filter(d => d.type != "empty" && d.risky).sort((a, b) => a.mul - b.mul);
+
+	try {		// validation
+
+		if (riskyDice.length < 1)
+			throw new Error("There needs to be at least 1 risky dice to calculate anything meaningful.");
+
+	} catch (ex) {
+		cb_invalid(ex);
+	}
+	
+
+	let newDiceOrder = [...riskyDice, ...safeDice];
+
+	// reorder
+	let oldDieEls = bar.dice.map(slot => ({ name: slot.die.name, el: slot.dieEl }) );
+	for (let i = bar.dice.length - 1; i >= 0; i--) {
+		const newDice = i < newDiceOrder.length ? newDiceOrder[i] : dice.empty;
+		if (newDice.name != allDice[i].name) {
+			const slot = bar.dice[i];
+			
+			slot.die = newDice;
+			slot.dieEl = oldDieEls.splice(oldDieEls.findIndex(d => d.name == newDice.name), 1)[0].el;
+			slot.el.appendChild(slot.dieEl);
 		}
 	}
+	
+
+
+		
+
+	let current = riskyDice[0];
+	let diff = current.max - current.min;
+	let avg = (current.max + current.min + 1) / 2 * current.mul;
+
+	
+	
+	console.log(calcBreakEvenForTurns(1, diff / (diff + 1), avg ));
+}
+
+
+function calcBreakEvenForTurns(n, chanceOfSuccess, avgGain) {
+
+	console.log(arguments);
+
+	// for n turns
+	// current multipliers: M
+
+	// x = (5/6)² * (x + 4)
+	// x - (5/6)² x = (5/6)² * 4
+	// x = (5/6)² / (1 - (5/6)²) * 4
+	// x = 4 / ((6/5)² - 1)
+	let x = avgGain / (Math.pow(1/chanceOfSuccess, n) - 1);
+
+	return x;
 }
