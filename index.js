@@ -193,6 +193,7 @@ window.onload = function() {
 
 function resize() {
 	
+	alert(window.innerWidth + " " + window.devicePixelRatio);
 	document.body.style.setProperty("--dice-scale", Math.min(3, window.innerWidth / window.devicePixelRatio / 224) * window.devicePixelRatio);
 }
 window.onresize = resize;
