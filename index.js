@@ -32,13 +32,14 @@ let dice = {
 };
 let diceOrder = [];
 let diceByName = { empty: dice.empty };
+let globalIsEvolved = false;
 function addDieType(subname, type, min, max, mul, color, text) {
 	const name = type + subname;
 	let die = {
 		name: name,
 		type: type,
 		min: min,
-		max: max,
+		_max: max,
 		mul: mul,
 		color: color,
 		text: text,
@@ -46,6 +47,9 @@ function addDieType(subname, type, min, max, mul, color, text) {
 		doubleMultiplier: mul == 1 ? 2 : 3,
 		tripleMultiplier: mul == 1 ? 5 : 11 + 2/3,
 	};
+	Object.defineProperty(die, "max", {
+		get: _ => globalIsEvolved ? die._max + 1 : die._max
+	});
 	dice[type][subname] = die;
 	diceOrder.push(die);
 	diceByName[name] = die;
@@ -138,10 +142,11 @@ function createBar(target, layout) {
 	let bar = {
 		el: document.createElement("dice-bar"),
 		dice: [],
+		isEvolved: layout.isEvolved,
 	}
 	for (let i = 0; i < 4; i++) {
 		const slot = {
-			die: layout && layout.length && diceByName[layout[i]] || (i ? dice.empty : dice.atk.single),
+			die: layout && layout.dice && diceByName[layout.dice[i]] || (i ? dice.empty : dice.atk.single),
 			el: document.createElement("die-slot"),
 			index: i,
 		};
@@ -155,6 +160,24 @@ function createBar(target, layout) {
 		bar.dice.push(slot);
 
 		bar.el.appendChild(slot.el);
+	}
+	let evolvedToggle = document.createElement("dice-bar-evolved");
+	bar.el.appendChild(evolvedToggle);
+	evolvedToggle.onclick = function() {
+		bar.isEvolved = !bar.isEvolved;
+		if (bar.isEvolved)
+			evolvedToggle.classList.add("selected");
+		else
+			evolvedToggle.classList.remove("selected");
+		go(ex => {
+			console.error(ex);
+			alert(ex);
+			bar.isEvolved = !bar.isEvolved;
+			if (bar.isEvolved)
+				evolvedToggle.classList.add("selected");
+			else
+				evolvedToggle.classList.remove("selected");
+		});
 	}
 
 	target.appendChild(bar.el);
@@ -192,12 +215,15 @@ window.onload = function() {
 	});
 };
 
+let scrollbarWidth = 0;
 function resize() {
+	if (window.innerWidth > document.body.clientWidth)
+		scrollbarWidth = window.innerWidth - document.body.clientWidth;
 	
 	if (window.devicePixelRatio > 1.5)
-		document.body.style.setProperty("--dice-scale", Math.min(3, window.innerWidth * window.devicePixelRatio / 224 / window.devicePixelRatio));
+		document.body.style.setProperty("--dice-scale", Math.min(3, (window.innerWidth - scrollbarWidth) * window.devicePixelRatio / 222 / window.devicePixelRatio));
 	else
-		document.body.style.setProperty("--dice-scale", Math.min(3, Math.floor(window.innerWidth * window.devicePixelRatio / 224) / window.devicePixelRatio));
+		document.body.style.setProperty("--dice-scale", Math.min(3, Math.floor((window.innerWidth - scrollbarWidth) * window.devicePixelRatio / 222) / window.devicePixelRatio));
 }
 window.onresize = resize;
 
@@ -208,6 +234,8 @@ function go(cb_invalid) {
 
 
 	let bar = window.bar;
+
+	globalIsEvolved = bar.isEvolved;
 
 	let barDiceCopy = bar.dice.map(slot => ({...slot}));
 	let safeDice = barDiceCopy.filter(slot => slot.die.type != "empty" && !slot.die.risky).reverse().sort((a, b) => (a.die.type == "mul") - (b.die.type == "mul") || a.die.min - b.die.min || a.die.max - b.die.max)
@@ -449,7 +477,7 @@ function go(cb_invalid) {
 			if (lastDieName) {
 				beforeEl = document.createElement("br");
 				resEl.appendChild(beforeEl);
-				resEl.appendChild(document.createTextNode("Roll until"));
+				resEl.appendChild(document.createTextNode("Stop at"));
 				rowEl.appendChild(resEl);
 			}
 			resEl = document.createElement("th");
@@ -461,7 +489,7 @@ function go(cb_invalid) {
 	}
 	beforeEl = document.createElement("br");
 	resEl.appendChild(beforeEl);
-	resEl.appendChild(document.createTextNode("Roll until"));
+	resEl.appendChild(document.createTextNode("Stop at"));
 	rowEl.appendChild(resEl);
 	resultList.appendChild(rowEl);
 
@@ -490,6 +518,6 @@ function go(cb_invalid) {
 
 	// save configuration
 
-	localStorage.bars = JSON.stringify([ bar.dice.map(d => d.die.name) ]);
+	localStorage.bars = JSON.stringify([ { isEvolved: bar.isEvolved, dice: bar.dice.map(d => d.die.name) } ]);
 
 }

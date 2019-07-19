@@ -24,6 +24,7 @@ die:before {
 	content: "";
 	background-image: url(SpriteSheet.png);
 	background-repeat: no-repeat;
+	image-rendering: crisp-edges; 
 	image-rendering: pixelated;
 	background-origin: content-box;
 	background-clip: content-box;
@@ -81,7 +82,7 @@ dice-bar-container {
 }
 dice-bar {
 	display: block;
-	width: calc(var(--dice-scale) * 208px);
+	width: calc(var(--dice-scale) * 218px);
 	height: calc(var(--dice-scale) * 52px);
 	margin: calc(var(--dice-scale) * 8px) auto;
 }
@@ -277,4 +278,42 @@ result-list die:after {
 }
 #show-hidden-results {
 	display: none;
+}
+dice-bar-evolved {
+    display: block;
+    float: right;
+    margin: calc(var(--dice-scale) * 3px);
+    height: calc(var(--dice-scale) * 46px);
+    margin-left: 0;
+    width: calc(var(--dice-scale) * 7px);
+    position: relative;
+}
+dice-bar-evolved:before {
+    content: "evolved";
+    width: calc(var(--dice-scale) * 7px);
+    display: block;
+    text-orientation: sideways;
+    writing-mode: vertical-rl;
+    line-height: calc(var(--dice-scale) * 7px);
+    text-align: right;
+    color: #c8c8c8;
+    letter-spacing: .05em;
+    cursor: pointer;
+    position: absolute;
+    bottom: 0;
+    padding-bottom: calc(var(--dice-scale) * 9px);
+}
+dice-bar-evolved:after {
+    content: "";
+    height: calc(var(--dice-scale) * 5px);
+    width: calc(var(--dice-scale) * 5px);
+    border: solid calc(var(--dice-scale) * 1px) #3a3f44;
+    border-radius: calc(var(--dice-scale) * 2px);
+    display: block;
+    cursor: pointer;
+    position: absolute;
+    bottom: 0;
+}
+dice-bar-evolved.selected:after {
+    background-color: green;
 }
