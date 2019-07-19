@@ -5,17 +5,7 @@ body {
     background-color: #272b30;
 	font-family: sans-serif;
 	color: white;
-	--dice-scale: 1;
-}
-@media (min-width: 448px) {
-	body {
-		--dice-scale: 2;
-	}
-}
-@media (min-width: 672px) {
-	body {
-		--dice-scale: 3;
-	}
+	--dice-scale: 3;
 }
 main-container {
 	padding: calc(var(--dice-scale) * 12px);
