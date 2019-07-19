@@ -169,7 +169,10 @@ window.onload = function() {
 	resultList = document.getElementById("result-list-simple");
 	orderList = document.getElementById("order-list");
 
-	let restoredBars = JSON.parse(localStorage.bars || "[]");
+	let restoredBars = [];
+	try {
+		restoredBars = JSON.parse(localStorage.bars);
+	} catch (_) { }
 
 	diceBarContainer = document.getElementById("dice-bar-container");
 	window.bar = createBar(diceBarContainer, restoredBars[0]);
