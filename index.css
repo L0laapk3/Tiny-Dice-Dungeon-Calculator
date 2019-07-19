@@ -62,7 +62,7 @@ dice-bar, die-slot, die-selector {
 
 dice-bar {
 	display: block;
-	width: fit-content;
+	width: 624px;
 }
 die-slot {
 	display: block;

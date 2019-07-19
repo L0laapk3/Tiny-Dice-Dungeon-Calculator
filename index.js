@@ -39,12 +39,14 @@ function addDieType(name, type, min, max, mul, color, text) {
 		color: color,
 		text: text,
 		risky: type == "atk" && min == 1,
+		doubleMultiplier: mul == 1 ? 2 : 3,
+		tripleMultiplier: mul == 1 ? 5 : 11 + 2/3,
 	};
 	dice[type][name] = die;
 	diceOrder.push(die);
 }
 
-addDieType("core"	, "atk", 1, 6, 1, "#ffffff", "core");
+addDieType("single"	, "atk", 1, 6, 1, "#ffffff", "single");
 
 addDieType("x2"		, "atk", 1, 6, 2, "#781713", "double");
 addDieType("x3"		, "atk", 1, 6, 3, "#921514", "triple");
@@ -53,6 +55,7 @@ addDieType("x5"		, "atk", 1, 6, 5, "#C01710", "quintuple");
 addDieType("x6"		, "atk", 1, 6, 6, "#E01710", "sextuple");
 
 addDieType("p1"		, "atk", 2, 6, 1, "#773712", "> 1");
+// addDieType("p2"		, "atk", 3, 6, 1, "#0F0", "> 2");
 addDieType("p3"		, "atk", 4, 6, 1, "#DB630E", "> 3");
 
 addDieType("x2"		, "mul", 1, 2, 1, "#484201", "mult 1-2");
@@ -96,7 +99,6 @@ function createSelector(slot) {
 				});
 			};
 			slot.dieEl.onclick = function(ev) {
-				slot.dieEl.onclick = undefined;
 				destructSelector(ev);
 			}
 			
@@ -119,6 +121,7 @@ function createSelector(slot) {
 
 
 	function destructSelector(ev) {
+		slot.dieEl.onclick = undefined;
 		target.removeChild(selector);
 		target.parentNode.removeChild(bgOverlay);
 		target.style.zIndex = oldZIndex;
@@ -136,7 +139,7 @@ window.onload = function() {
 	}
 	for (let i = 0; i < bar.el.children.length; i++) {
 		const slot = {
-			die: i ? dice.empty : dice.atk.core,
+			die: i ? dice.empty : dice.atk.single,
 			el: bar.el.children[i],
 		};
 
@@ -169,13 +172,18 @@ function go(cb_invalid) {
 	let safeDice = allDice.filter(d => d.type != "empty" && !d.risky).sort((a, b) => (a.type == "mul") - (b.type == "mul") || a.min - b.min || a.max - b.max)
 	let riskyDice = allDice.filter(d => d.type != "empty" && d.risky).sort((a, b) => a.mul - b.mul);
 
-	try {		// validation
+	// validate inputs
+	try {
 
 		if (riskyDice.length < 1)
 			throw new Error("There needs to be at least 1 risky dice to calculate anything meaningful.");
 
+		for (let die of allDice)
+			if (die.type == "atk" && allDice.filter(d => d.name == die.name).length > 3)
+				throw new Error("Cannot calculate for 4 of the same die type as the multiplier for rolling the same number on 4 identical dice is unknown.");
+
 	} catch (ex) {
-		cb_invalid(ex);
+		return cb_invalid(ex);
 	}
 	
 
@@ -196,30 +204,129 @@ function go(cb_invalid) {
 	
 
 
+
+
+	const riskyThrowsToConsider = safeDice.some(d => d.type == "mul") ? riskyDice.length * 2 : riskyDice.length;
+	
+
+	const avMul = safeDice.filter(d => d.type == "mul").map(d => (d.min + d.max) / 2).reduce((p, q) => p * q, 1);
+	
+	let maxBreakEvenPointsPerMultiplier = { 1: 1 };
+	for (let dieIndex = 0; dieIndex < safeDice.length; dieIndex++) {
+		const die = safeDice[dieIndex];
+		if (die.type != "mul")
+			continue;
+		const prevMultipliers = Object.keys(maxBreakEvenPointsPerMultiplier);
+		for (let prev of prevMultipliers)
+				for (let nowMultiplier = Math.max(die.min, 2); nowMultiplier <= die.max; nowMultiplier++) {
+					maxBreakEvenPointsPerMultiplier[nowMultiplier * parseInt(prev, 10)] = 1;
+
+				}
+	}
+
+	let previousThrows = [];
+	// TODO: these are only the calculations if you should throw the first die and say nothing about subsequent dice.
+
+	let isCurrentThrow = true;
+	let currentThrowCount = 0, currentDiceIndex = riskyDice.length;
+	let successChance = 1;
+	let avCurrentGain = 0, avNextGain = 0;	// average gains before multiplied my multiplier dice in current throw (with predetermined multiplier) and in subsequent throws
+	let thrownRiskyDice = [];
+
+	while (++currentThrowCount <= riskyThrowsToConsider) {
+
+		let currentDie = riskyDice[--currentDiceIndex];
+		let diff = currentDie.max - currentDie.min;
+		let av = (currentDie.max + currentDie.min + 1) / 2 * currentDie.mul;
+
+		let doubleAv = 0;
+		let identicalDiceCount = 1;
+		let previousIdenticalDiceThrowValues = [];
+		for (let dieThrow of previousThrows)
+			if (dieThrow.die.name == currentDie.name) {
+				// TODO: stuff?
+				identicalDiceCount++;
+				previousIdenticalDiceThrowValues.push(dieThrow.result);
+			}
+
+		for (let die of thrownRiskyDice)
+			if (die.name == currentDie.name)
+				identicalDiceCount++;
 		
+		if (identicalDiceCount == 2) {
+			if (previousIdenticalDiceThrowValues.length == 1) {
+				// 1 known, 1 unknown
+				// double with 1 known
+				doubleAv += 2 * (currentDie.doubleMultiplier - 1) * previousIdenticalDiceThrowValues[0] / diff;
 
-	let current = riskyDice[0];
-	let diff = current.max - current.min;
-	let avg = (current.max + current.min + 1) / 2 * current.mul;
+			} else if (previousIdenticalDiceThrowValues.length == 0)
+				// 2 unknown
+				// double with 2 unknowns
+				doubleAv += 2 * (currentDie.doubleMultiplier - 1) * av / diff;
 
-	
-	
-	console.log(calcBreakEvenForTurns(1, diff / (diff + 1), avg ));
-}
+		} else if (identicalDiceCount == 3) {
+			if (previousIdenticalDiceThrowValues.length == 2) {
+				if (previousIdenticalDiceThrowValues[1] == previousIdenticalDiceThrowValues[0])
+					// 2 same known, 1 unknown
+					// for triple if double already happened with 1 unkwown
+					doubleAv += 3 * (currentDie.tripleMultiplier - currentDie.doubleMultiplier) * av / diff;
+
+				else
+					// 2 diff known, 1 unknown
+					// double with 1 of 2 knowns
+					doubleAv += 2 * (currentDie.doubleMultiplier - 1) * (previousIdenticalDiceThrowValues[0] + previousIdenticalDiceThrowValues[1]) / diff;
+					
+			} else if (previousIdenticalDiceThrowValues.length == 1) {
+				// 1 known, 2 unknown
+				// 2 * double with 1 known or double with 2 unknown
+				doubleAv += 2 * (currentDie.doubleMultiplier - 1) * (2 * previousIdenticalDiceThrowValues[0] + av) / diff;
+				// triple if double already happened with 2 unknowns
+				doubleAv += 3 * (currentDie.tripleMultiplier - currentDie.doubleMultiplier) * previousIdenticalDiceThrowValues[0] / diff**2;
+			} else if (previousIdenticalDiceThrowValues.length == 0) {
+				// 3 unknowns
+				// 3 * double with 2 unknowns
+				doubleAv += 2 * (currentDie.doubleMultiplier - 1) * (3 * av) / diff;
+				// triple if double already happened with 2 unknowns
+				doubleAv += 3 * (currentDie.tripleMultiplier - currentDie.doubleMultiplier) * av / diff**2;
+			}
+			
+		}
 
 
-function calcBreakEvenForTurns(n, chanceOfSuccess, avgGain) {
+		if (isCurrentThrow)
+			avCurrentGain += av + doubleAv;
+		else
+			avNextGain += av + doubleAv;
 
-	console.log(arguments);
+		successChance *= diff / (diff + 1);
 
-	// for n turns
-	// current multipliers: M
+		if (currentDiceIndex > 0)
+			thrownRiskyDice.push(currentDie);
+		else {
+			currentDiceIndex = riskyDice.length;
+			thrownRiskyDice = []
+			isCurrentThrow = false;
+			for (let die of safeDice)
+				if (die.type == "atk")	//todo: account for double/triple chance
+					avNextGain += (die.max + die.min + 1) / 2 * die.mul;
+		}
 
-	// x = (5/6)² * (x + 4)
-	// x - (5/6)² x = (5/6)² * 4
-	// x = (5/6)² / (1 - (5/6)²) * 4
-	// x = 4 / ((6/5)² - 1)
-	let x = avgGain / (Math.pow(1/chanceOfSuccess, n) - 1);
 
-	return x;
+		// avGain = avCurrGain * m + avNextGain * avMul
+		// x = p * (x + avGain)
+		// (1 - p) x = p * avGain
+		// x = p / (1 - p) * avGain
+
+		const failMultiplier = successChance / (1 - successChance);
+		const avNextGainMul = avNextGain * avMul;
+
+		for (let multiplier of Object.keys(maxBreakEvenPointsPerMultiplier)) {
+			multiplier = parseInt(multiplier);
+			let breakEvenPoint = failMultiplier * (avCurrentGain * multiplier + avNextGainMul);
+			if (breakEvenPoint > maxBreakEvenPointsPerMultiplier[multiplier])
+				maxBreakEvenPointsPerMultiplier[multiplier] = breakEvenPoint;
+		}
+	}
+
+	console.log(maxBreakEvenPointsPerMultiplier);
 }
