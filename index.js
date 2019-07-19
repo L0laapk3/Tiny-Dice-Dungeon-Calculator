@@ -128,8 +128,11 @@ function createSelector(slot) {
 	}
 }
 
+let resultList;
 
 window.onload = function() {
+
+	resultList = document.getElementById("result-list-simple");
 
 	let bar = {
 		el: document.getElementById("dice-bar"),
@@ -155,8 +158,6 @@ window.onload = function() {
 
 	go();
 };
-
-
 
 
 
@@ -338,6 +339,25 @@ function go(cb_invalid) {
 	} while (anyIncreased);
 
 	
+
+
 	
-	console.log(multiplierConfigurations);
+
+	// plot results
+
+	
+	while (resultList.children.length > 1)
+		resultList.removeChild(resultList.lastChild);
+	for (let row of Object.values(multiplierConfigurations).sort((a, b) => a.multiplier - b.multiplier)) {
+		const rowEl = document.createElement("tr");
+		const mulEl = document.createElement("td");
+		mulEl.innerText = row.multiplier;
+		rowEl.appendChild(mulEl);
+		const resEl = document.createElement("td");
+		resEl.innerText = Math.round(row.breakEvenPoint * 10) / 10;
+		rowEl.appendChild(resEl);
+		resultList.appendChild(rowEl);
+	}
+
+
 }

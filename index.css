@@ -123,3 +123,24 @@ die-slot die-selector:after {
 	border-top: solid 6px grey;
 	border-top-left-radius: 12px;
 }
+
+a:visited:not(:active) {
+	color:blue;
+}
+result-list {
+	margin: 20px;
+	display: block;
+}
+result-list table {
+	margin-top: 4px;
+	background-color: deepskyblue;
+	border: solid 1px blue;
+}
+result-list table tr:nth-child(even) {
+	background-color: skyblue;
+}
+result-list table th,
+result-list table td {
+	padding: .3em;
+	border: solid 1px blue;
+}
