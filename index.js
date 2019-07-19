@@ -74,6 +74,8 @@ function createSelector(slot) {
 		return;
 	let selector = document.createElement("die-selector");
 	const target = slot.el;
+	const originalDieEl = slot.dieEl;
+	const originalDie = slot.die;
 	selectorExists = selector;
 	for (let j = 0; j < diceOrder.length; j += 4) {
 		let column = document.createElement("die-selector-column");
@@ -81,8 +83,6 @@ function createSelector(slot) {
 			const dieButton = diceOrder[i] == slot.die ? dice.empty : diceOrder[i];
 			const dieButtonEl = addDie(dieButton, column);
 			dieButtonEl.onclick = function(ev) {
-				let originalDieEl = slot.dieEl;
-				let originalDie = slot.die;
 				slot.el.removeChild(originalDieEl);
 				slot.die = dieButton;
 				slot.dieEl = dieButtonEl;
@@ -98,9 +98,7 @@ function createSelector(slot) {
 					slot.el.appendChild(slot.dieEl);
 				});
 			};
-			slot.dieEl.onclick = function(ev) {
-				destructSelector(ev);
-			}
+			slot.dieEl.onclick = ev => destructSelector(ev);
 			
 			// if (dieButton == dice.empty)
 			// 	dieButton.setAttribute("data-text", "clear die");
@@ -114,14 +112,14 @@ function createSelector(slot) {
 	target.parentNode.appendChild(bgOverlay);
 	const oldZIndex = target.style.zIndex;
 	target.style.zIndex = 101;
-	bgOverlay.onclick = destructSelector;
+	bgOverlay.onclick = ev => destructSelector(ev);
 	target.insertBefore(selector, target.firstChild);
 
 	return selector;
 
 
 	function destructSelector(ev) {
-		slot.dieEl.onclick = undefined;
+		originalDieEl.onclick = undefined;
 		target.removeChild(selector);
 		target.parentNode.removeChild(bgOverlay);
 		target.style.zIndex = oldZIndex;
@@ -141,6 +139,7 @@ window.onload = function() {
 		const slot = {
 			die: i ? dice.empty : dice.atk.single,
 			el: bar.el.children[i],
+			index: i,
 		};
 
 		slot.dieEl = addDie(slot.die, slot.el);
@@ -190,17 +189,16 @@ function go(cb_invalid) {
 	let newDiceOrder = [...riskyDice, ...safeDice];
 
 	// reorder
-	// let oldDieEls = bar.dice.map(slot => ({ name: slot.die.name, el: slot.dieEl }) );
-	// for (let i = bar.dice.length - 1; i >= 0; i--) {
-	// 	const newDice = i < newDiceOrder.length ? newDiceOrder[i] : dice.empty;
-	// 	if (newDice.name != allDice[i].name) {
-	// 		const slot = bar.dice[i];
-			
-	// 		slot.die = newDice;
-	// 		slot.dieEl = oldDieEls.splice(oldDieEls.findIndex(d => d.name == newDice.name), 1)[0].el;
-	// 		slot.el.appendChild(slot.dieEl);
-	// 	}
-	// }
+	let oldDieEls = bar.dice.map(slot => ({ name: slot.die.name, el: slot.dieEl }) );
+	for (let i = bar.dice.length - 1; i >= 0; i--) {
+		const newDice = i < newDiceOrder.length ? newDiceOrder[i] : dice.empty;
+		if (newDice.name != allDice[i].name) {
+			const slot = bar.dice[i];
+			slot.die = newDice;
+			slot.dieEl = oldDieEls.splice(oldDieEls.findIndex(d => d.name == newDice.name), 1)[0].el;
+			slot.el.appendChild(slot.dieEl);
+		}
+	}
 	
 
 
