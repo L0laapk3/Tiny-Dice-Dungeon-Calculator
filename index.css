@@ -7,6 +7,11 @@ body {
 	color: white;
 	--dice-scale: 3;
 }
+@media (min-device-pixel-ratio: 1.5) {
+	body {
+		--dice-scale: 2;
+	}
+}
 main-container {
 	padding: 1.6em;
 	display: block;
@@ -145,13 +150,13 @@ die-slot.selected > die-selector-container:before {
     position: absolute;
     height: calc(var(--dice-scale) * 6px + 1px);
     width: calc(var(--dice-scale) * 34px - 2px);
-    top: calc(var(--dice-scale) * -9px + 0px);
+    top: calc(var(--dice-scale) * -9px);
     left: calc(var(--dice-scale) * -2px + 1px);
     z-index: 1;
-    border-left: solid 18px #c8c8c8;
-    border-right: solid 18px #c8c8c8;
-    border-bottom: solid 18px transparent;
-    border-top: solid 9px #c8c8c8;
+    border-left: solid calc(var(--dice-scale) * 6px) #c8c8c8;
+    border-right: solid calc(var(--dice-scale) * 6px) #c8c8c8;
+    border-bottom: solid calc(var(--dice-scale) * 6px) transparent;
+    border-top: solid calc(var(--dice-scale) * 3px) #c8c8c8;
     background-color: #c8c8c8;
     background-clip: padding-box;
 }
