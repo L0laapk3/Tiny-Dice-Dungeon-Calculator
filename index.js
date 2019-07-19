@@ -193,7 +193,6 @@ window.onload = function() {
 
 function resize() {
 	
-	alert(window.innerWidth + " " + window.devicePixelRatio);
 	if (window.devicePixelRatio > 1.5)
 		document.body.style.setProperty("--dice-scale", Math.min(3, window.innerWidth * window.devicePixelRatio / 224 / window.devicePixelRatio));
 	else

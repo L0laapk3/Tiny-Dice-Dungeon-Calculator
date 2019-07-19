@@ -257,7 +257,7 @@ order-list {
 	text-align: center;
 	height: calc(var(--dice-scale) * 48px);
 	position: relative;
-	font-size: 3em;
+	font-size: calc(var(--dice-scale) * 12px);
 	max-width: 100%;
 }
 order-list > span {
