@@ -116,8 +116,7 @@ function createSelector(slot) {
 
 	let bgOverlay = document.createElement("die-selector-overlay");
 	target.parentNode.appendChild(bgOverlay);
-	const oldZIndex = target.style.zIndex;
-	target.style.zIndex = 101;
+	target.classList.add("selected");
 	bgOverlay.onclick = ev => destructSelector(ev);
 	target.insertBefore(selector, target.firstChild);
 
@@ -128,7 +127,7 @@ function createSelector(slot) {
 		originalDieEl.onclick = undefined;
 		target.removeChild(selector);
 		target.parentNode.removeChild(bgOverlay);
-		target.style.zIndex = oldZIndex;
+		target.classList.remove("selected");
 		selectorExists = undefined;
 		ev.stopPropagation();
 	}

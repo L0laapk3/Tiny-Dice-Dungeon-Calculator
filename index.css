@@ -16,7 +16,8 @@ main-container {
 
 die[data-name="empty"]:before {
 	display: block;
-	background-position: 0 calc(var(--dice-scale) * -33px);
+	/* background-position: 0 calc(var(--dice-scale) * -33px); */
+	background-position: 0 0;
 	background-color: rgba(0, 0, 0, 0.35);
 }
 die:before {
@@ -93,6 +94,9 @@ die-slot {
 	background-color: #c8c8c8;
 	position: relative;
 }
+die-slot.selected {
+	z-index: 101;
+}
 die-selector {
 	display: block;
 	width: calc(var(--dice-scale) * 168px);
@@ -121,6 +125,25 @@ die-slot die-selector {
 	margin-bottom: calc(var(--dice-scale) * 9px);
 	margin-left: calc(var(--dice-scale) * -2px);
 	line-height: 0;
+}
+die-slot.selected:before {
+    content: "";
+    display: block;
+    position: absolute;
+	background-color: #c8c8c8;
+    width: 100%;
+    height: calc(var(--dice-scale) * 9px);
+    top: calc(var(--dice-scale) * -6px + 1px);
+}
+die-slot.selected:after {
+    content: "";
+    display: block;
+    position: absolute;
+	background-color: #c8c8c8;
+    height: calc(var(--dice-scale) * 2px);
+    width: calc(var(--dice-scale) * 44px);
+    top: calc(var(--dice-scale) * -6px + 1px);
+    left: calc(var(--dice-scale) * -1px);
 }
 die-slot die-selector:before {
 	content: "";
