@@ -5,11 +5,16 @@ body {
     background-color: #272b30;
 	font-family: sans-serif;
 	color: white;
-	--dice-scale: 3;
+	--dice-scale: 1;
 }
-@media (min-device-pixel-ratio: 1.5) {
+@media (min-width: 424px) {
 	body {
 		--dice-scale: 2;
+	}
+}
+@media (min-width: 636px) {
+	body {
+		--dice-scale: 3;
 	}
 }
 main-container {
