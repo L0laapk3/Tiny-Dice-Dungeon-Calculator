@@ -74,7 +74,7 @@ dice-bar, die-slot, die-selector, order-list {
 dice-bar-container {
 	position: fixed;
     display: block;
-    max-width: calc(var(--dice-scale) * 224px);
+    max-width: calc(var(--dice-scale) * 246px);
     width: 100%;
     bottom: 0;
     background: linear-gradient(180deg, transparent 0, #272b30 calc(var(--dice-scale) * 16px));

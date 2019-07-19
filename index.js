@@ -225,7 +225,7 @@ function resize() {
 	if (window.devicePixelRatio > 1.5)
 		document.body.style.setProperty("--dice-scale", Math.min(3, (window.innerWidth - scrollbarWidth) * window.devicePixelRatio / 222 / window.devicePixelRatio));
 	else
-		document.body.style.setProperty("--dice-scale", Math.min(3, Math.floor((window.innerWidth - scrollbarWidth) * window.devicePixelRatio / 222) / window.devicePixelRatio));
+		document.body.style.setProperty("--dice-scale", Math.min(3, Math.floor((window.innerWidth - scrollbarWidth) * window.devicePixelRatio / 246) / window.devicePixelRatio));
 }
 window.onresize = resize;
 
@@ -251,7 +251,7 @@ function go(cb_invalid) {
 
 		for (let slot of bar.dice)
 			if (slot.die.type == "atk" && bar.dice.filter(s => s.die.name == slot.die.name).length > 3)
-				throw new Error("Cannot calculate for 4 of the same die type as the multiplier for rolling the same number on 4 identical dice is unknown.");
+				throw new Error("Cannot calculate results for 4 of the same dice type as the behaviour for rolling 4 of the same is unknown.");
 
 	} catch (ex) {
 		return cb_invalid(ex);
