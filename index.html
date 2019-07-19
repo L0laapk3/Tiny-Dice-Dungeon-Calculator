@@ -13,31 +13,35 @@
     </head>
     <body>
 
-		<h1>Tiny Dice Dungeon Optimal Strategy Calculator</h1>	
+		<main-container>
+			<h1>Tiny Dice Dungeon Optimal Strategy Calculator</h1>	
 
-		<result-list>
-			<!-- <a href="#" id="result-show-combinations">show dice combinations</a> -->
-			<table id="result-list-simple" cellspacing="0" cellpadding="0">
-				<tr>
-					<th>Multiplier</th>
-					<th>Roll until</th>
-				</tr>
-			</table>
-		</result-list>
+			<result-list>
+				<!-- <a href="#" id="result-show-combinations">show dice combinations</a> -->
+				<table id="result-list-simple" cellspacing="0" cellpadding="0">
+					<tr>
+						<th>Multiplier</th>
+						<th>Roll until</th>
+					</tr>
+				</table>
+			</result-list>
 
-		<h2>Optimal playstyle</h2>
-		<p>throw the multiplier and no-risk dice first. Based on the currently thrown multipliers, you should start throwing the rest of your dice only if your total damage is lower as the value from the table. Its always favorable to throw all your risky dice at once.</p>
+			<h2>Optimal playstyle</h2>
+			<p>throw the multiplier and no-risk dice first. Based on the currently thrown multipliers, you should start throwing the rest of your dice only if your total damage is lower as the value from the table. Its always favorable to throw all your risky dice at once.</p>
 
-		<h2>Notes</h2>
-		<p>These numbers purely gives the most damage per turn, it's the optimal for if the enemy has infinite health. To be able to finish off enemies, rounding up is generally slightly favored.</p>
-		<p>Blablabla something about how zero-damage turns can screw you over, and how you can reduce them without much cost in DPT by using a (slightly) lower target damage.</p>
+			<h2>Notes</h2>
+			<p>These numbers purely gives the most damage per turn, it's the optimal for if the enemy has infinite health. To be able to finish off enemies, rounding up is generally slightly favored.</p>
+			<p>Blablabla something about how zero-damage turns can screw you over, and how you can reduce them without much cost in DPT by using a (slightly) lower target damage.</p>
+		</main-container>
 
-		<dice-bar id="dice-bar">
-			<die-slot></die-slot>
-			<die-slot></die-slot>
-			<die-slot></die-slot>
-			<die-slot></die-slot>
-		</dice-bar>
+		<dice-bar-container>
+			<dice-bar id="dice-bar">
+				<die-slot></die-slot>
+				<die-slot></die-slot>
+				<die-slot></die-slot>
+				<die-slot></die-slot>
+			</dice-bar>
+		</dice-bar-container>
 		
     </body>
 </html>

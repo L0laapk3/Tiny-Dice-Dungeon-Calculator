@@ -5,8 +5,12 @@ body {
     background-color: #272b30;
 	font-family: sans-serif;
 	color: white;
-	padding: 40px;
 	--dice-scale: 2;
+}
+main-container {
+	padding: 1.6em;
+	display: block;
+	padding-bottom: calc(var(--dice-scale) * 68px);
 }
 
 
@@ -59,10 +63,11 @@ die[data-name="empty"]:before {
 }
 
 #dice-bar {
-	position: fixed;
 	bottom: 0;
 	left: 0;
-	margin: calc(var(--dice-scale) * 8px);
+	margin-top: 0;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 dice-bar, die-slot, die-selector {
@@ -70,10 +75,19 @@ dice-bar, die-slot, die-selector {
 	border-radius: calc(var(--dice-scale) * 4px);
 }
 
+dice-bar-container {
+	position: fixed;
+	display: block;
+	max-width: calc(var(--dice-scale) * 224px);
+	width: 100%;
+	bottom: 0;
+	background-color: #272b30;
+}
 dice-bar {
 	display: block;
 	width: calc(var(--dice-scale) * 208px);
 	height: calc(var(--dice-scale) * 52px);
+	margin: calc(var(--dice-scale) * 8px);
 }
 die-slot {
 	display: block;
