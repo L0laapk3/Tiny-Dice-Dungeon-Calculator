@@ -1,6 +1,5 @@
 
 
-
 function addDie(prototype, target, variationClone) {
 	let die = document.createElement("die");
 
@@ -167,6 +166,8 @@ let resultList, orderList;
 
 window.onload = function() {
 
+	resize();
+
 	resultList = document.getElementById("result-list-simple");
 	orderList = document.getElementById("order-list");
 
@@ -190,6 +191,11 @@ window.onload = function() {
 	});
 };
 
+function resize() {
+	
+	document.body.style.setProperty("--dice-scale", 3 / window.devicePixelRatio);
+}
+window.onresize = resize;
 
 
 

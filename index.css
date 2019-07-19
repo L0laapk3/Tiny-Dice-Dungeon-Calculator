@@ -7,18 +7,18 @@ body {
 	color: white;
 	--dice-scale: 1;
 }
-@media (min-width: 424px) {
+@media (min-width: 448px) {
 	body {
 		--dice-scale: 2;
 	}
 }
-@media (min-width: 636px) {
+@media (min-width: 672px) {
 	body {
 		--dice-scale: 3;
 	}
 }
 main-container {
-	padding: 1.6em;
+	padding: calc(var(--dice-scale) * 12px);
 	display: block;
 	padding-bottom: calc(var(--dice-scale) * 68px);
 }
@@ -87,7 +87,7 @@ dice-bar-container {
 	width: 100%;
 	bottom: 0;
 	background-color: #272b30;
-    border-right: solid 100vw #272b30;
+	border-right: solid 100vw #272b30;
 }
 dice-bar {
 	display: block;
@@ -259,15 +259,16 @@ result-list table.single-result td:first-child {
 
 order-list {
 	background-color: #c8c8c8;
-    display: flex;
-    width: fit-content;
-    font-weight: bolder;
-    color: black;
-    line-height: calc(var(--dice-scale) * 49px);
-    text-align: center;
-    height: calc(var(--dice-scale) * 48px);
-    position: relative;
-    font-size: 3em;
+	display: flex;
+	width: fit-content;
+	font-weight: bolder;
+	color: black;
+	line-height: calc(var(--dice-scale) * 49px);
+	text-align: center;
+	height: calc(var(--dice-scale) * 48px);
+	position: relative;
+	font-size: 3em;
+	max-width: 100%;
 }
 order-list > span {
 	padding: 0 0.15em;
