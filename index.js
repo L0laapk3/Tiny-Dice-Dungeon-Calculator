@@ -161,22 +161,24 @@ function createBar(target, layout) {
 
 		bar.el.appendChild(slot.el);
 	}
-	let evolvedToggle = document.createElement("dice-bar-evolved");
-	bar.el.appendChild(evolvedToggle);
-	evolvedToggle.onclick = function() {
+	let evolvedEl = document.createElement("dice-bar-evolved");
+	if (bar.isEvolved)
+		evolvedEl.classList.add("selected");
+	bar.el.appendChild(evolvedEl);
+	evolvedEl.onclick = function() {
 		bar.isEvolved = !bar.isEvolved;
 		if (bar.isEvolved)
-			evolvedToggle.classList.add("selected");
+			evolvedEl.classList.add("selected");
 		else
-			evolvedToggle.classList.remove("selected");
+			evolvedEl.classList.remove("selected");
 		go(ex => {
 			console.error(ex);
 			alert(ex);
 			bar.isEvolved = !bar.isEvolved;
 			if (bar.isEvolved)
-				evolvedToggle.classList.add("selected");
+				evolvedEl.classList.add("selected");
 			else
-				evolvedToggle.classList.remove("selected");
+				evolvedEl.classList.remove("selected");
 		});
 	}
 

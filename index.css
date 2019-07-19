@@ -73,12 +73,13 @@ dice-bar, die-slot, die-selector, order-list {
 
 dice-bar-container {
 	position: fixed;
-	display: block;
-	max-width: calc(var(--dice-scale) * 224px);
-	width: 100%;
-	bottom: 0;
-	background-color: #272b30;
-	border-right: solid 100vw #272b30;
+    display: block;
+    max-width: calc(var(--dice-scale) * 224px);
+    width: 100%;
+    bottom: 0;
+    background: linear-gradient(180deg, transparent 0, #272b30 calc(var(--dice-scale) * 16px));
+    padding-top: calc(var(--dice-scale) * 8px);
+    padding-right: 100vw;
 }
 dice-bar {
 	display: block;
