@@ -227,11 +227,13 @@ a {
 result-list {
 	margin: 2em 0;
 	display: block;
+	--main-dice-scale: var(--dice-scale);
 }
 result-list table {
 	margin-top: .2em;
 	background-color: deepskyblue;
 	color: black;
+	--dice-scale: calc(1/3 * var(--main-dice-scale));
 }
 result-list table tr:nth-child(even) {
 	background-color: skyblue;
@@ -265,4 +267,14 @@ order-list > span {
 }
 small-die-container {
 	display: inline-block;
+}
+result-list die:before {
+	cursor: default;
+	margin-bottom: calc(var(--dice-scale) * 3px);
+}
+result-list die:after {
+	content: initial;
+}
+#show-hidden-results {
+	display: none;
 }
