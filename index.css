@@ -6,7 +6,6 @@ body {
 	font-family: sans-serif;
 	color: white;
 	padding: 40px;
-	font-size: 1.1em;
 	--dice-scale: 2;
 }
 
@@ -74,6 +73,7 @@ dice-bar, die-slot, die-selector {
 dice-bar {
 	display: block;
 	width: calc(var(--dice-scale) * 208px);
+	height: calc(var(--dice-scale) * 52px);
 }
 die-slot {
 	display: block;
@@ -137,6 +137,7 @@ die-slot die-selector:after {
 
 h1 {
 	margin: .8em 0;
+	font-size: 2.4em;
 }
 h2 {
 	margin: 1.2em 0 .6em 0;
