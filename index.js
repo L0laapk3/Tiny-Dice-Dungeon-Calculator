@@ -189,11 +189,12 @@ function go(cb_invalid) {
 	let newDiceOrder = [...riskyDice, ...safeDice];
 
 	// reorder
-	let oldDieEls = bar.dice.map(slot => ({ name: slot.die.name, el: slot.dieEl }) );
+	let oldDieEls = bar.dice.filter((slot, i) => i >= newDiceOrder.length || slot.die.name != newDiceOrder[i].name).map(slot => ({ name: slot.die.name, el: slot.dieEl }) );
 	for (let i = bar.dice.length - 1; i >= 0; i--) {
 		const newDice = i < newDiceOrder.length ? newDiceOrder[i] : dice.empty;
 		if (newDice.name != allDice[i].name) {
 			const slot = bar.dice[i];
+			
 			slot.die = newDice;
 			slot.dieEl = oldDieEls.splice(oldDieEls.findIndex(d => d.name == newDice.name), 1)[0].el;
 			slot.el.appendChild(slot.dieEl);
