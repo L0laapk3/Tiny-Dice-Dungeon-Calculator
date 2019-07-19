@@ -14,6 +14,11 @@ main-container {
 }
 
 
+die[data-name="empty"]:before {
+	display: block;
+	background-position: 0 calc(var(--dice-scale) * -33px);
+	background-color: rgba(0, 0, 0, 0.35);
+}
 die:before {
 	content: "";
 	background-image: url(SpriteSheet.png);
@@ -21,9 +26,9 @@ die:before {
 	image-rendering: pixelated;
 	background-origin: content-box;
 	background-clip: content-box;
-	background-size: calc(var(--dice-scale) * 180px) calc(var(--dice-scale) * 132px);
+	background-size: calc(var(--dice-scale) * 210px) calc(var(--dice-scale) * 132px);
+	background-position:  calc(var(--dice-scale) * (var(--variation-x) + 1) * -30px) calc(var(--dice-scale) * var(--variation-y) * -33px);
 	background-color: inherit;
-	background-position:  calc(var(--dice-scale) * var(--variation-x) * -30px) calc(var(--dice-scale) * var(--variation-y) * -33px);
 	width: calc(var(--dice-scale) * 30px);
 	height: calc(var(--dice-scale) * 33px);
 	margin: calc(var(--dice-scale) * 6px);
@@ -40,8 +45,8 @@ die:before {
 	background-blend-mode: multiply;
     -webkit-mask-image: url(SpriteSheet.png);
     mask-image: url(SpriteSheet.png);
-    -webkit-mask-size: calc(var(--dice-scale) * 180px) calc(var(--dice-scale) * 132px);
-	mask-size: calc(var(--dice-scale) * 180px) calc(var(--dice-scale) * 132px);
+    -webkit-mask-size: calc(var(--dice-scale) * 210px) calc(var(--dice-scale) * 132px);
+	mask-size: calc(var(--dice-scale) * 210px) calc(var(--dice-scale) * 132px);
     -webkit-mask-origin: content-box;
     mask-origin: content-box;
 	cursor: pointer;
@@ -57,19 +62,6 @@ die:after {
 	bottom: 0;
 	font-size: 1em;
 	line-height: 1em;
-}
-die[data-name="empty"]:before {
-	filter: brightness(0%);
-	display: block;
-	opacity: 0.35;
-}
-
-#dice-bar {
-	bottom: 0;
-	left: 0;
-	margin-top: 0;
-	margin-left: auto;
-	margin-right: auto;
 }
 
 dice-bar, die-slot, die-selector, order-list {
@@ -90,7 +82,7 @@ dice-bar {
 	display: block;
 	width: calc(var(--dice-scale) * 208px);
 	height: calc(var(--dice-scale) * 52px);
-	margin: calc(var(--dice-scale) * 8px);
+	margin: calc(var(--dice-scale) * 8px) auto;
 }
 die-slot {
 	display: block;
