@@ -1,6 +1,10 @@
 * {
     margin: 0;
 }
+body {
+    background-color: #333;
+    font-family: sans-serif;
+}
 
 
 die:before {
@@ -50,7 +54,7 @@ die[data-name="empty"]:before {
 }
 
 #dice-bar {
-	position: absolute;
+	position: fixed;
 	bottom: 0;
 	margin: 24px;
 }
@@ -124,8 +128,8 @@ die-slot die-selector:after {
 	border-top-left-radius: 12px;
 }
 
-a:visited:not(:active) {
-	color:blue;
+a:not(:active) {
+	color:white;
 }
 result-list {
 	margin: 20px;
@@ -134,13 +138,12 @@ result-list {
 result-list table {
 	margin-top: 4px;
 	background-color: deepskyblue;
-	border: solid 1px blue;
 }
 result-list table tr:nth-child(even) {
 	background-color: skyblue;
 }
 result-list table th,
 result-list table td {
-	padding: .3em;
-	border: solid 1px blue;
+	padding: .3em .5em;
+	font-size: 1.1em;
 }

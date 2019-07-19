@@ -304,12 +304,13 @@ function go(cb_invalid) {
 			if (currentDiceIndex > 0)
 				thrownRiskyDice.push(currentDie);
 			else {
+				// all dices are reset, throw all safe dice
 				currentDiceIndex = riskyDice.length;
 				thrownRiskyDice = []
 				isCurrentThrow = false;
 				for (let die of safeDice)
 					if (die.type == "atk")	//todo: account for double/triple chance
-						avNextGain += (die.max + die.min + 1) / 2 * die.mul;
+						avNextGain += (die.max + die.min) / 2 * die.mul;
 			}
 
 
@@ -341,7 +342,7 @@ function go(cb_invalid) {
 	
 
 
-	
+
 
 	// plot results
 
