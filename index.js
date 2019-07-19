@@ -143,7 +143,6 @@ window.onload = function() {
 		dice: [],
 	}
 	let restoredBars = JSON.parse(localStorage.bars || "[]");
-	console.log(restoredBars);
 
 	for (let i = 0; i < bar.el.children.length; i++) {
 		const slot = {
@@ -215,7 +214,7 @@ function go(cb_invalid) {
 
 	const avMul = safeDice.filter(d => d.type == "mul").map(d => (d.min + d.max) / 2).reduce((p, q) => p * q, 1);
 	
-	let multiplierConfigurations = { 1: { multiplier: 1, breakEvenPoint: 0, done: false } };
+	let multiplierConfigurations = { 1: { multiplier: 1, breakEvenPoint: 0 } };
 	for (let dieIndex = 0; dieIndex < safeDice.length; dieIndex++) {
 		const die = safeDice[dieIndex];
 		if (die.type != "mul")
@@ -223,7 +222,7 @@ function go(cb_invalid) {
 		const newMultipliers = { };
 		for (let prev of Object.values(multiplierConfigurations))
 				for (let nowMultiplier = die.min; nowMultiplier <= die.max; nowMultiplier++)
-					newMultipliers[nowMultiplier * prev.multiplier] = { multiplier: nowMultiplier * prev.multiplier, breakEvenPoint: 0, done: false };
+					newMultipliers[nowMultiplier * prev.multiplier] = { multiplier: nowMultiplier * prev.multiplier, breakEvenPoint: 0 };
 
 		multiplierConfigurations = newMultipliers;
 	}
@@ -330,17 +329,11 @@ function go(cb_invalid) {
 			const avNextGainMul = avNextGain * avMul;
 
 			for (let config of Object.values(multiplierConfigurations)) {
-				if (config.done)
-					continue;
 				let breakEvenPoint = failMultiplier * (avCurrentGain * config.multiplier + avNextGainMul);
 				if (breakEvenPoint > config.breakEvenPoint) {
 					config.breakEvenPoint = breakEvenPoint;
-					if (config.multiplier >= avMul)
-						config.done = true;
-					else
-						anyIncreased = true;
-				} else
-					config.done = true;
+					anyIncreased = true;
+				}
 			}
 
 		}
