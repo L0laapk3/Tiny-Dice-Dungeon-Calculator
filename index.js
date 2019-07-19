@@ -349,6 +349,10 @@ function go(cb_invalid) {
 	
 	while (resultList.children.length > 1)
 		resultList.removeChild(resultList.lastChild);
+	if (Object.keys(multiplierConfigurations).length > 1)
+		resultList.classList.remove("single-result");
+	else
+		resultList.classList.add("single-result");
 	for (let row of Object.values(multiplierConfigurations).sort((a, b) => a.multiplier - b.multiplier)) {
 		const rowEl = document.createElement("tr");
 		const mulEl = document.createElement("td");

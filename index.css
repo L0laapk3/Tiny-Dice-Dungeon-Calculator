@@ -5,7 +5,7 @@ body {
     background-color: #272b30;
 	font-family: sans-serif;
 	color: white;
-	padding: 20px;
+	padding: 40px;
 	font-size: 1.1em;
 }
 
@@ -133,15 +133,25 @@ die-slot die-selector:after {
 	border-top-left-radius: 12px;
 }
 
+h1 {
+	margin: .8em 0;
+}
+h2 {
+	margin: 1.2em 0 .6em 0;
+}
+p {
+	margin: .6em 0;
+}
+
 a {
 	color:white;
 }
 result-list {
-	margin: 20px;
+	margin: 2em 0;
 	display: block;
 }
 result-list table {
-	margin-top: 4px;
+	margin-top: .2em;
 	background-color: deepskyblue;
 	color: black;
 }
@@ -151,4 +161,9 @@ result-list table tr:nth-child(even) {
 result-list table th,
 result-list table td {
 	padding: .3em .5em;
+}
+
+result-list table.single-result th:first-child,
+result-list table.single-result td:first-child {
+	display: none
 }
