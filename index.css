@@ -2,8 +2,10 @@
     margin: 0;
 }
 body {
-    background-color: #333;
-    font-family: sans-serif;
+    background-color: #272b30;
+	font-family: sans-serif;
+	color: white;
+	padding: 20px;
 }
 
 
@@ -40,6 +42,7 @@ die:before {
 }
 die:after {
 	content: attr(data-text);
+	color: black;
 	position: absolute;
 	width: 128px;
 	text-align: center;
@@ -56,11 +59,12 @@ die[data-name="empty"]:before {
 #dice-bar {
 	position: fixed;
 	bottom: 0;
+	left: 0;
 	margin: 24px;
 }
 
 dice-bar, die-slot, die-selector {
-	border: solid 6px grey;
+	border: solid 6px #3a3f44;
 	border-radius: 12px;
 }
 
@@ -74,14 +78,14 @@ die-slot {
 	margin: 8px;
 	width: 128px;
 	height: 128px;
-	background-color: white;
+	background-color: #c8c8c8;
 	position: relative;
 }
 die-selector {
 	display: block;
 	width: 512px;
 	position: absolute;
-	background-color: white;
+	background-color: #c8c8c8;
 	bottom: 100%;
 }
 die-selector-column {
@@ -111,10 +115,10 @@ die-slot die-selector:before {
 	position: absolute;
 	width: 140px;
 	height: 30px;
-	background: linear-gradient(180deg, white 13px, transparent 13px), linear-gradient(270deg, transparent 7px, white 7px);
+	background: linear-gradient(180deg, #c8c8c8 13px, transparent 13px), linear-gradient(270deg, transparent 7px, #c8c8c8 7px);
 	bottom: -22px;
 	left: -6px;
-	border-left: solid 6px grey;
+	border-left: solid 6px #3a3f44;
 }
 die-slot die-selector:after {
 	content: "";
@@ -123,8 +127,8 @@ die-slot die-selector:after {
 	height: 17px;
 	bottom: -23px;
 	left: 128px;
-	border-left: solid 6px grey;
-	border-top: solid 6px grey;
+	border-left: solid 6px #3a3f44;
+	border-top: solid 6px #3a3f44;
 	border-top-left-radius: 12px;
 }
 
@@ -138,6 +142,7 @@ result-list {
 result-list table {
 	margin-top: 4px;
 	background-color: deepskyblue;
+	color: black;
 }
 result-list table tr:nth-child(even) {
 	background-color: skyblue;

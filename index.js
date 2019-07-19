@@ -28,10 +28,13 @@ let dice = {
 		name: "empty",
 		text: "empty slot"
 	}
-}, diceOrder = [];
-function addDieType(name, type, min, max, mul, color, text) {
+};
+let diceOrder = [];
+let diceByName = {};
+function addDieType(subname, type, min, max, mul, color, text) {
+	const name = type + subname;
 	let die = {
-		name: type + name,
+		name: name,
 		type: type,
 		min: min,
 		max: max,
@@ -42,8 +45,9 @@ function addDieType(name, type, min, max, mul, color, text) {
 		doubleMultiplier: mul == 1 ? 2 : 3,
 		tripleMultiplier: mul == 1 ? 5 : 11 + 2/3,
 	};
-	dice[type][name] = die;
+	dice[type][subname] = die;
 	diceOrder.push(die);
+	diceByName[name] = die;
 }
 
 addDieType("single"	, "atk", 1, 6, 1, "#ffffff", "single");
@@ -138,9 +142,12 @@ window.onload = function() {
 		el: document.getElementById("dice-bar"),
 		dice: [],
 	}
+	let restoredBars = JSON.parse(localStorage.bars || "[]");
+	console.log(restoredBars);
+
 	for (let i = 0; i < bar.el.children.length; i++) {
 		const slot = {
-			die: i ? dice.empty : dice.atk.single,
+			die: restoredBars.length && diceByName[restoredBars[0][i]] || (i ? dice.empty : dice.atk.single),
 			el: bar.el.children[i],
 			index: i,
 		};
@@ -360,5 +367,12 @@ function go(cb_invalid) {
 		resultList.appendChild(rowEl);
 	}
 
+
+
+
+
+	// save configuration
+
+	localStorage.bars = JSON.stringify([ bar.dice.map(d => d.die.name) ]);
 
 }
