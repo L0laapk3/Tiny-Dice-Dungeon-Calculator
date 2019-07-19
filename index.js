@@ -1,7 +1,7 @@
 
 
 
-function addDie(prototype, target) {
+function addDie(prototype, target, variationClone) {
 	let die = document.createElement("die");
 
 	die.style.backgroundColor = prototype.color;
@@ -9,8 +9,8 @@ function addDie(prototype, target) {
 	die.setAttribute("data-text", prototype.text);
 
 	if (die.type != "empty") {
-		die.style.setProperty('--variation-x', Math.floor(Math.random() * 6));
-		die.style.setProperty('--variation-y', Math.floor(Math.random() * 4));
+		die.style.setProperty('--variation-x', variationClone ? variationClone.style.getPropertyValue('--variation-x') : Math.floor(Math.random() * 6));
+		die.style.setProperty('--variation-y', variationClone ? variationClone.style.getPropertyValue('--variation-y') : Math.floor(Math.random() * 4));
 	}
 
 	target.appendChild(die);
@@ -134,22 +134,15 @@ function createSelector(slot) {
 	}
 }
 
-let resultList;
-
-window.onload = function() {
-
-	resultList = document.getElementById("result-list-simple");
-
+function createBar(target, layout) {
 	let bar = {
-		el: document.getElementById("dice-bar"),
+		el: document.createElement("dice-bar"),
 		dice: [],
 	}
-	let restoredBars = JSON.parse(localStorage.bars || "[]");
-
-	for (let i = 0; i < bar.el.children.length; i++) {
+	for (let i = 0; i < 4; i++) {
 		const slot = {
-			die: restoredBars.length && diceByName[restoredBars[0][i]] || (i ? dice.empty : dice.atk.single),
-			el: bar.el.children[i],
+			die: layout && layout.length && diceByName[layout[i]] || (i ? dice.empty : dice.atk.single),
+			el: document.createElement("die-slot"),
 			index: i,
 		};
 
@@ -160,11 +153,37 @@ window.onload = function() {
 		};
 
 		bar.dice.push(slot);
+
+		bar.el.appendChild(slot.el);
 	}
 
-	window.bar = bar;
+	target.appendChild(bar.el);
 
-	go();
+	return bar;
+}
+
+let resultList, orderList;
+
+window.onload = function() {
+
+	resultList = document.getElementById("result-list-simple");
+	orderList = document.getElementById("order-list");
+
+	let restoredBars = JSON.parse(localStorage.bars || "[]");
+
+	diceBarContainer = document.getElementById("dice-bar-container");
+	window.bar = createBar(diceBarContainer, restoredBars[0]);
+
+	go(ex => {
+		console.error("Problem with stored bar, resetting it.", ex);
+		while (diceBarContainer.lastChild)
+			diceBarContainer.removeChild(diceBarContainer.lastChild);
+		window.bar = createBar(diceBarContainer);
+		go(ex => {
+			console.error("Problem with default bar.", ex);
+			alert("Fatal error when loading page: " + ex);
+		});
+	});
 };
 
 
@@ -176,9 +195,9 @@ function go(cb_invalid) {
 
 	let bar = window.bar;
 
-	let allDice = bar.dice.map(d => d.die);
-	let safeDice = allDice.filter(d => d.type != "empty" && !d.risky).sort((a, b) => (a.type == "mul") - (b.type == "mul") || a.min - b.min || a.max - b.max)
-	let riskyDice = allDice.filter(d => d.type != "empty" && d.risky).sort((a, b) => a.mul - b.mul);
+	let barDiceCopy = bar.dice.map(slot => ({...slot}));
+	let safeDice = barDiceCopy.filter(slot => slot.die.type != "empty" && !slot.die.risky).reverse().sort((a, b) => (a.die.type == "mul") - (b.die.type == "mul") || a.die.min - b.die.min || a.die.max - b.die.max)
+	let riskyDice = barDiceCopy.filter(slot => slot.die.type != "empty" && slot.die.risky).reverse().sort((a, b) => a.die.mul - b.die.mul);
 
 	// validate inputs
 	try {
@@ -186,8 +205,8 @@ function go(cb_invalid) {
 		if (riskyDice.length < 1)
 			throw new Error("There needs to be at least 1 risky dice to calculate anything meaningful.");
 
-		for (let die of allDice)
-			if (die.type == "atk" && allDice.filter(d => d.name == die.name).length > 3)
+		for (let slot of bar.dice)
+			if (slot.die.type == "atk" && bar.dice.filter(s => s.die.name == slot.die.name).length > 3)
 				throw new Error("Cannot calculate for 4 of the same die type as the multiplier for rolling the same number on 4 identical dice is unknown.");
 
 	} catch (ex) {
@@ -195,33 +214,33 @@ function go(cb_invalid) {
 	}
 	
 
-	let newDiceOrder = [...riskyDice, ...safeDice];
 
 	// reorder
-	let oldDieEls = bar.dice.filter((slot, i) => i >= newDiceOrder.length || slot.die.name != newDiceOrder[i].name).map(slot => ({ name: slot.die.name, el: slot.dieEl }) );
-	for (let i = bar.dice.length - 1; i >= 0; i--) {
-		const newDice = i < newDiceOrder.length ? newDiceOrder[i] : dice.empty;
-		if (newDice.name != allDice[i].name) {
-			const slot = bar.dice[i];
+	// let newDiceOrder = [...riskyDice, ...safeDice];
+	// let oldDieEls = barDiceCopy.filter((slot, i) => i >= newDiceOrder.length || slot.die.name != newDiceOrder[i].die.name);
+	// for (let i = bar.dice.length - 1; i >= 0; i--) {
+	// 	const newDice = i < newDiceOrder.length ? newDiceOrder[i].die : dice.empty;
+	// 	if (newDice.name != bar.dice[i].die.name) {
+	// 		const slot = bar.dice[i];
 			
-			slot.die = newDice;
-			slot.dieEl = oldDieEls.splice(oldDieEls.findIndex(d => d.name == newDice.name), 1)[0].el;
-			slot.el.appendChild(slot.dieEl);
-		}
-	}
+	// 		slot.die = newDice;
+	// 		slot.dieEl = oldDieEls.splice(oldDieEls.findIndex(d => d.die.name == newDice.name), 1)[0].dieEl;
+	// 		slot.el.appendChild(slot.dieEl);
+	// 	}
+	// }
 	
 
 
 	
 
-	const avMul = safeDice.filter(d => d.type == "mul").map(d => (d.min + d.max) / 2).reduce((p, q) => p * q, 1);
+	const avMul = safeDice.filter(d => d.die.type == "mul").map(d => (d.die.min + d.die.max) / 2).reduce((p, q) => p * q, 1);
 	
 	let multiplierConfigurations = { 1: { multiplier: 1, breakEvenPoint: 0 } };
 	for (let dieIndex = 0; dieIndex < safeDice.length; dieIndex++) {
-		const die = safeDice[dieIndex];
+		const die = safeDice[dieIndex].die;
 		if (die.type != "mul")
 			continue;
-		const newMultipliers = { };
+		const newMultipliers = {};
 		for (let prev of Object.values(multiplierConfigurations))
 				for (let nowMultiplier = die.min; nowMultiplier <= die.max; nowMultiplier++)
 					newMultipliers[nowMultiplier * prev.multiplier] = { multiplier: nowMultiplier * prev.multiplier, breakEvenPoint: 0 };
@@ -244,7 +263,7 @@ function go(cb_invalid) {
 
 		for (let _ of riskyDice) {
 
-			let currentDie = riskyDice[--currentDiceIndex];
+			let currentDie = riskyDice[--currentDiceIndex].die;
 			let diff = currentDie.max - currentDie.min;
 			let av = (currentDie.max + currentDie.min + 1) / 2 * currentDie.mul;
 
@@ -316,9 +335,9 @@ function go(cb_invalid) {
 				currentDiceIndex = riskyDice.length;
 				thrownRiskyDice = []
 				isCurrentThrow = false;
-				for (let die of safeDice)
-					if (die.type == "atk")	//todo: account for double/triple chance
-						avNextGain += (die.max + die.min) / 2 * die.mul;
+				for (let slot of safeDice)
+					if (slot.die.type == "atk")	//todo: account for double/triple chance
+						avNextGain += (slot.die.max + slot.die.min) / 2 * slot.die.mul;
 			}
 
 
@@ -329,6 +348,7 @@ function go(cb_invalid) {
 
 			const failMultiplier = successChance / (1 - successChance);
 			const avNextGainMul = avNextGain * avMul;
+
 
 			for (let config of Object.values(multiplierConfigurations)) {
 				let breakEvenPoint = failMultiplier * (avCurrentGain * config.multiplier + avNextGainMul);
@@ -342,6 +362,37 @@ function go(cb_invalid) {
 	} while (anyIncreased);
 
 	
+
+
+
+
+	// plot order
+
+	while (orderList.lastChild)
+		orderList.removeChild(orderList.lastChild);
+	let needsFirstArrow = false;
+	for (let i = safeDice.length - 1; i >= 0; i--) {
+		const container = document.createElement("small-die-container");
+		addDie(safeDice[i].die, container, safeDice[i].dieEl);
+		orderList.appendChild(container);
+		needsFirstArrow = true;
+	}
+	let lastDieName;
+	for (let i = riskyDice.length - 1; i >= 0; i--) {
+		if (needsFirstArrow) {
+			if (lastDieName != riskyDice[i].die.name) {
+				const arrow = document.createElement("span");
+				arrow.innerText = ">";
+				orderList.appendChild(arrow)
+			}
+		} else
+			needsFirstArrow = true;
+		lastDieName = riskyDice[i].die.name;
+		const container = document.createElement("small-die-container");
+		addDie(riskyDice[i].die, container, riskyDice[i].dieEl);
+		orderList.appendChild(container);
+	}
+
 
 
 

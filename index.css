@@ -23,7 +23,7 @@ die:before {
 	background-clip: content-box;
 	background-size: calc(var(--dice-scale) * 180px) calc(var(--dice-scale) * 132px);
 	background-color: inherit;
-	background-position:  calc(var(--dice-scale) * var(--variation-x)) calc(var(--dice-scale) * var(--variation-y));
+	background-position:  calc(var(--dice-scale) * var(--variation-x) * -30px) calc(var(--dice-scale) * var(--variation-y) * -33px);
 	width: calc(var(--dice-scale) * 30px);
 	height: calc(var(--dice-scale) * 33px);
 	margin: calc(var(--dice-scale) * 6px);
@@ -49,6 +49,8 @@ die:before {
 die:after {
 	content: attr(data-text);
 	color: black;
+	font-weight: initial;
+	letter-spacing: initial;
 	position: absolute;
 	width: calc(var(--dice-scale) * 42px);
 	text-align: center;
@@ -70,7 +72,7 @@ die[data-name="empty"]:before {
 	margin-right: auto;
 }
 
-dice-bar, die-slot, die-selector {
+dice-bar, die-slot, die-selector, order-list {
 	border: solid calc(var(--dice-scale) * 2px) #3a3f44;
 	border-radius: calc(var(--dice-scale) * 4px);
 }
@@ -82,6 +84,7 @@ dice-bar-container {
 	width: 100%;
 	bottom: 0;
 	background-color: #272b30;
+    border-right: solid 100vw #272b30;
 }
 dice-bar {
 	display: block;
@@ -183,4 +186,24 @@ result-list table td {
 result-list table.single-result th:first-child,
 result-list table.single-result td:first-child {
 	display: none
+}
+
+
+order-list {
+	background-color: #c8c8c8;
+    display: flex;
+    width: fit-content;
+    font-weight: bolder;
+    color: black;
+    line-height: calc(var(--dice-scale) * 49px);
+    text-align: center;
+    height: calc(var(--dice-scale) * 48px);
+    position: relative;
+    font-size: 3em;
+}
+order-list > span {
+	padding: 0 0.15em;
+}
+small-die-container {
+	display: inline-block;
 }
