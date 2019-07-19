@@ -8,8 +8,10 @@ function addDie(prototype, target) {
 	die.setAttribute("data-name", prototype.name);
 	die.setAttribute("data-text", prototype.text);
 
-	if (die.type != "empty")
-		die.style.backgroundPosition = Math.floor(Math.random() * 6) * -90 + "px " + Math.floor(Math.random() * 4) * -99 + "px";
+	if (die.type != "empty") {
+		die.style.setProperty('--variation-x', Math.floor(Math.random() * 6));
+		die.style.setProperty('--variation-y', Math.floor(Math.random() * 4));
+	}
 
 	target.appendChild(die);
 

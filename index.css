@@ -7,6 +7,7 @@ body {
 	color: white;
 	padding: 40px;
 	font-size: 1.1em;
+	--dice-scale: 2;
 }
 
 
@@ -17,26 +18,27 @@ die:before {
 	image-rendering: pixelated;
 	background-origin: content-box;
 	background-clip: content-box;
-	background-size: 6144px 6144px;
+	background-size: calc(var(--dice-scale) * 180px) calc(var(--dice-scale) * 132px);
 	background-color: inherit;
-	background-position: inherit;
-	width: 90px;
-	height: 99px;
-	margin: 10px 19px 19px 19px;
+	background-position:  calc(var(--dice-scale) * var(--variation-x)) calc(var(--dice-scale) * var(--variation-y));
+	width: calc(var(--dice-scale) * 30px);
+	height: calc(var(--dice-scale) * 33px);
+	margin: calc(var(--dice-scale) * 6px);
+	margin-top: calc(var(--dice-scale) * 3px);
 }
 die {
 	position: relative;
-	width: 128px;
-	height: 128px;
-	font-size: 1em;
+	width: calc(var(--dice-scale) * 42px);
+	height: calc(var(--dice-scale) * 42px);
+	font-size: calc(var(--dice-scale) * 6px);
 }
 die:before {
 	display: block;
 	background-blend-mode: multiply;
     -webkit-mask-image: url(SpriteSheet.png);
     mask-image: url(SpriteSheet.png);
-    -webkit-mask-size: 6144px 6144px;
-	mask-size: 6144px 6144px;
+    -webkit-mask-size: calc(var(--dice-scale) * 180px) calc(var(--dice-scale) * 132px);
+	mask-size: calc(var(--dice-scale) * 180px) calc(var(--dice-scale) * 132px);
     -webkit-mask-origin: content-box;
     mask-origin: content-box;
 	cursor: pointer;
@@ -45,9 +47,9 @@ die:after {
 	content: attr(data-text);
 	color: black;
 	position: absolute;
-	width: 128px;
+	width: calc(var(--dice-scale) * 42px);
 	text-align: center;
-	bottom: 1px;
+	bottom: 0;
 	font-size: 1em;
 	line-height: 1em;
 }
@@ -61,40 +63,40 @@ die[data-name="empty"]:before {
 	position: fixed;
 	bottom: 0;
 	left: 0;
-	margin: 24px;
+	margin: calc(var(--dice-scale) * 8px);
 }
 
 dice-bar, die-slot, die-selector {
-	border: solid 6px #3a3f44;
-	border-radius: 12px;
+	border: solid calc(var(--dice-scale) * 2px) #3a3f44;
+	border-radius: calc(var(--dice-scale) * 4px);
 }
 
 dice-bar {
 	display: block;
-	width: 624px;
+	width: calc(var(--dice-scale) * 208px);
 }
 die-slot {
 	display: block;
 	float: left;
-	margin: 8px;
-	width: 128px;
-	height: 128px;
+	margin: calc(var(--dice-scale) * 3px);
+	width: calc(var(--dice-scale) * 42px);
+	height: calc(var(--dice-scale) * 42px);
 	background-color: #c8c8c8;
 	position: relative;
 }
 die-selector {
 	display: block;
-	width: 512px;
+	width: calc(var(--dice-scale) * 168px);
 	position: absolute;
 	background-color: #c8c8c8;
-	bottom: 100%;
+	bottom: calc(var(--dice-scale) * 37px - 1px);
 }
 die-selector-column {
 	display: inline-block;
 	position: relative;
 }
 die-selector-column die:not(:first-child):before {
-	margin-top: 29px;
+	margin-top: calc(var(--dice-scale) * 9px);
 }
 die-selector-overlay {
 	position: fixed;
@@ -107,30 +109,30 @@ die-selector-overlay {
 	cursor: pointer;
 }
 die-slot die-selector {
-	margin-bottom: 10px;
-	margin-left: -6px;
+	margin-bottom: calc(var(--dice-scale) * 9px);
+	margin-left: calc(var(--dice-scale) * -2px);
 	line-height: 0;
 }
 die-slot die-selector:before {
 	content: "";
 	position: absolute;
-	width: 140px;
-	height: 30px;
-	background: linear-gradient(180deg, #c8c8c8 13px, transparent 13px), linear-gradient(270deg, transparent 7px, #c8c8c8 7px);
-	bottom: -22px;
-	left: -6px;
-	border-left: solid 6px #3a3f44;
+	width: calc(var(--dice-scale) * 46px + 1px);
+	height: calc(var(--dice-scale) * 10px);
+	background: linear-gradient(180deg, #c8c8c8 calc(var(--dice-scale) * 4px), transparent calc(var(--dice-scale) * 4px)), linear-gradient(270deg, transparent calc(var(--dice-scale) * 2px + 2px), #c8c8c8 calc(var(--dice-scale) * 2px + 2px));
+	bottom: calc(var(--dice-scale) * -8px + 1px);
+	left: calc(var(--dice-scale) * -2px);
+	border-left: solid calc(var(--dice-scale) * 2px) #3a3f44;
 }
 die-slot die-selector:after {
 	content: "";
 	position: absolute;
-	width: 7px;
-	height: 17px;
-	bottom: -23px;
-	left: 128px;
-	border-left: solid 6px #3a3f44;
-	border-top: solid 6px #3a3f44;
-	border-top-left-radius: 12px;
+	width: calc(var(--dice-scale) * 2px + 2px);
+	height: calc(var(--dice-scale) * 6px);
+	bottom: calc(var(--dice-scale) * -8px);
+	left: calc(var(--dice-scale) * 42px);
+	border-left: solid calc(var(--dice-scale) * 2px) #3a3f44;
+	border-top: solid calc(var(--dice-scale) * 2px) #3a3f44;
+	border-top-left-radius: calc(var(--dice-scale) * 4px);
 }
 
 h1 {
