@@ -5,7 +5,7 @@ body {
     background-color: #272b30;
 	font-family: sans-serif;
 	color: white;
-	--dice-scale: 2;
+	--dice-scale: 3;
 }
 main-container {
 	padding: 1.6em;
@@ -100,13 +100,13 @@ die-slot.selected {
 die-selector {
 	display: block;
 	width: calc(var(--dice-scale) * 168px);
-	position: absolute;
 	background-color: #c8c8c8;
-	bottom: calc(var(--dice-scale) * 37px - 1px);
+	position: absolute;
 }
 die-selector-column {
 	display: inline-block;
 	position: relative;
+	z-index: 4;
 }
 die-selector-column die:not(:first-child):before {
 	margin-top: calc(var(--dice-scale) * 9px);
@@ -125,46 +125,89 @@ die-slot die-selector {
 	margin-bottom: calc(var(--dice-scale) * 9px);
 	margin-left: calc(var(--dice-scale) * -2px);
 	line-height: 0;
+	bottom: calc(var(--dice-scale) * 37px - 1px);
 }
-die-slot.selected:before {
+die-slot:nth-child(2) die-selector {
+	left: calc(var(--dice-scale) * -52px);
+}
+die-slot:nth-child(3) die-selector {
+	right: calc(var(--dice-scale) * -54px);
+}
+die-slot:nth-child(4) die-selector {
+	right: calc(var(--dice-scale) * -2px);
+}
+die-slot.selected > die {
+	z-index: 1;
+}
+die-slot.selected > die-selector-container:before {
     content: "";
     display: block;
     position: absolute;
-	background-color: #c8c8c8;
-    width: 100%;
-    height: calc(var(--dice-scale) * 9px);
-    top: calc(var(--dice-scale) * -6px + 1px);
+    height: calc(var(--dice-scale) * 6px + 1px);
+    width: calc(var(--dice-scale) * 34px - 2px);
+    top: calc(var(--dice-scale) * -9px + 0px);
+    left: calc(var(--dice-scale) * -2px + 1px);
+    z-index: 1;
+    border-left: solid 18px #c8c8c8;
+    border-right: solid 18px #c8c8c8;
+    border-bottom: solid 18px transparent;
+    border-top: solid 9px #c8c8c8;
+    background-color: #c8c8c8;
+    background-clip: padding-box;
 }
+die-slot.selected > die-selector-container:after {
+    content: "";
+    display: block;
+    position: absolute;
+    width: auto;
+    border: solid calc(var(--dice-scale) * 6px) transparent;
+    border-top: solid calc(var(--dice-scale) * 7px) #c8c8c8;
+    z-index: 1;
+    top: calc(var(--dice-scale) * -6px);
+    left: calc(var(--dice-scale) * -5px);
+    right: calc(var(--dice-scale) * -5px);
+}
+die-slot:first-of-type.selected > die-selector-container:after {
+	left: 0;
+}
+die-slot:last-of-type.selected > die-selector-container:after {
+	right: 0;
+}
+die-slot.selected:before,
 die-slot.selected:after {
     content: "";
     display: block;
     position: absolute;
-	background-color: #c8c8c8;
-    height: calc(var(--dice-scale) * 2px);
-    width: calc(var(--dice-scale) * 44px);
+    height: calc(var(--dice-scale) * 12px);
     top: calc(var(--dice-scale) * -6px + 1px);
-    left: calc(var(--dice-scale) * -1px);
+    z-index: 4;
 }
-die-slot die-selector:before {
-	content: "";
-	position: absolute;
-	width: calc(var(--dice-scale) * 46px + 1px);
-	height: calc(var(--dice-scale) * 10px);
-	background: linear-gradient(180deg, #c8c8c8 calc(var(--dice-scale) * 4px), transparent calc(var(--dice-scale) * 4px)), linear-gradient(270deg, transparent calc(var(--dice-scale) * 2px + 2px), #c8c8c8 calc(var(--dice-scale) * 2px + 2px));
-	bottom: calc(var(--dice-scale) * -8px + 1px);
+die-slot:first-of-type.selected:before,
+die-slot:last-of-type.selected:after {
+	width: calc(var(--dice-scale) * 2px);
+	top: calc(var(--dice-scale) * -12px - 1px);
+	height: calc(var(--dice-scale) * 19px);
+	background-color: #3a3f44;
+}
+die-slot:first-of-type.selected:before {
 	left: calc(var(--dice-scale) * -2px);
-	border-left: solid calc(var(--dice-scale) * 2px) #3a3f44;
 }
-die-slot die-selector:after {
-	content: "";
-	position: absolute;
-	width: calc(var(--dice-scale) * 2px + 2px);
-	height: calc(var(--dice-scale) * 6px);
-	bottom: calc(var(--dice-scale) * -8px);
-	left: calc(var(--dice-scale) * 42px);
-	border-left: solid calc(var(--dice-scale) * 2px) #3a3f44;
-	border-top: solid calc(var(--dice-scale) * 2px) #3a3f44;
-	border-top-left-radius: calc(var(--dice-scale) * 4px);
+die-slot:last-of-type.selected:after {
+	right: calc(var(--dice-scale) * -2px);
+}
+die-slot:not(:first-of-type).selected:before {
+    width: calc(var(--dice-scale) * 4px);
+    left: calc(var(--dice-scale) * -6px);
+    border-top-right-radius: calc(var(--dice-scale) * 4px);
+    border-right: solid calc(var(--dice-scale) * 2px) #3a3f44;
+    border-top: solid calc(var(--dice-scale) * 2px) #3a3f44;
+}
+die-slot:not(:last-of-type).selected:after {
+    width: calc(var(--dice-scale) * 4px);
+    right: calc(var(--dice-scale) * -6px);
+    border-top-left-radius: calc(var(--dice-scale) * 4px);
+    border-left: solid calc(var(--dice-scale) * 2px) #3a3f44;
+    border-top: solid calc(var(--dice-scale) * 2px) #3a3f44;
 }
 
 h1 {

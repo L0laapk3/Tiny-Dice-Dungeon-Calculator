@@ -118,14 +118,16 @@ function createSelector(slot) {
 	target.parentNode.appendChild(bgOverlay);
 	target.classList.add("selected");
 	bgOverlay.onclick = ev => destructSelector(ev);
-	target.insertBefore(selector, target.firstChild);
+	let container = document.createElement("die-selector-container");
+	container.appendChild(selector);
+	target.insertBefore(container, target.firstChild);
 
-	return selector;
+	return container;
 
 
 	function destructSelector(ev) {
 		originalDieEl.onclick = undefined;
-		target.removeChild(selector);
+		target.removeChild(container);
 		target.parentNode.removeChild(bgOverlay);
 		target.classList.remove("selected");
 		selectorExists = undefined;
