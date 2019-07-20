@@ -157,6 +157,8 @@ function createBar(target, layout) {
 			createSelector(slot);
 		};
 		slot.el.oncontextmenu = function() {
+			if (slot.el.classList.contains("selected"))
+				return;
 			const originalDieEl = slot.dieEl;
 			const originalDie = slot.die;
 			slot.el.removeChild(originalDieEl);
@@ -203,7 +205,18 @@ function createBar(target, layout) {
 	return bar;
 }
 
-let resultList, orderList, hiddenResultsLink;
+let resultList, orderList, hiddenResultsLink, saveState;
+try {
+	saveState = JSON.parse(localStorage.saveState);
+	if (!(saveState.selectedBar < saveState.bars.length))
+		saveState.selectedBar = saveState.bars.length;
+} catch (_) {
+	saveState = {
+		selectedBar: 0,
+		bars: [ ],
+	};
+}
+
 
 window.onload = function() {
 
@@ -220,13 +233,9 @@ window.onload = function() {
 			return false;
 		};
 
-	let restoredBars = [];
-	try {
-		restoredBars = JSON.parse(localStorage.bars);
-	} catch (_) { }
-
 	diceBarContainer = document.getElementById("dice-bar-container");
-	window.bar = createBar(diceBarContainer, restoredBars[0]);
+	window.bar = createBar(diceBarContainer, saveState.bars[0]);
+	window.bar2 = createBar(diceBarContainer, saveState.bars[1]);
 
 	go(ex => {
 		console.error("Problem with stored bar, resetting it.", ex);
@@ -584,6 +593,7 @@ function go(cb_invalid) {
 
 	// save configuration
 
-	localStorage.bars = JSON.stringify([ { isEvolved: bar.isEvolved, dice: bar.dice.map(d => d.die.name) } ]);
+	saveState.bars = [ { isEvolved: bar.isEvolved, dice: bar.dice.map(d => d.die.name) } ];
+	localStorage.saveState = JSON.stringify(saveState);
 
 }
