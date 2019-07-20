@@ -21,21 +21,26 @@ function addDie(prototype, target, variationClone) {
 
 
 
+function Die(properties) {
+	Object.assign(this, properties);
+	this._json = _ => this.name;
+	return this;
+}
 let dice = {
 	atk: { },
 	mul: { },
-	empty: {
+	empty: new Die({
 		type: "empty",
 		name: "empty",
 		text: "empty slot"
-	}
+	})
 };
 let diceOrder = [];
-let diceByName = { empty: dice.empty };
+let diceByName = { empty: Die.empty };
 let globalIsEvolved = false;
 function addDieType(subname, type, min, max, mul, color, text) {
 	const name = type + subname;
-	let die = {
+	let die = new Die({
 		name: name,
 		type: type,
 		min: min,
@@ -46,7 +51,7 @@ function addDieType(subname, type, min, max, mul, color, text) {
 		risky: type == "atk" && min == 1,
 		doubleMultiplier: mul == 1 ? 2 : 3,
 		tripleMultiplier: mul == 1 ? 5 : 11 + 2/3,
-	};
+	});
 	Object.defineProperty(die, "max", {
 		get: _ => globalIsEvolved ? die._max + 1 : die._max
 	});
@@ -138,18 +143,24 @@ function createSelector(slot) {
 	}
 }
 
-function createBar(target, layout) {
+function Slot(properties) {
+	Object.assign(this, properties);
+	this._json = _ => this.die._json();
+	return this;
+}
+
+function createBar(layout) {
 	let bar = {
 		el: document.createElement("dice-bar"),
 		dice: [],
-		isEvolved: layout && layout.isEvolved,
+		isEvolved: !!(layout && layout.isEvolved),
 	}
 	for (let i = 0; i < 4; i++) {
-		const slot = {
+		const slot = new Slot({
 			die: layout && layout.dice && diceByName[layout.dice[i]] || (i ? dice.empty : dice.atk.single),
 			el: document.createElement("die-slot"),
 			index: i,
-		};
+		});
 
 		slot.dieEl = addDie(slot.die, slot.el);
 
@@ -200,8 +211,6 @@ function createBar(target, layout) {
 		});
 	}
 
-	target.appendChild(bar.el);
-
 	return bar;
 }
 
@@ -216,11 +225,13 @@ try {
 		bars: [ ],
 	};
 }
+if (!saveState.bars.length)
+	saveState.bars[0] = [ dice.empty.name, dice.atk.single.name, dice.atk.single.name, dice.atk.single.name ]
 
 
 window.onload = function() {
+	
 
-	resize();
 
 	resultList = document.getElementById("result-list-simple");
 	orderList = document.getElementById("order-list");
@@ -234,14 +245,19 @@ window.onload = function() {
 		};
 
 	diceBarContainer = document.getElementById("dice-bar-container");
-	window.bar = createBar(diceBarContainer, saveState.bars[0]);
-	window.bar2 = createBar(diceBarContainer, saveState.bars[1]);
+	saveState.bars = saveState.bars.map(createBar);
+	for (let bar of saveState.bars)
+		diceBarContainer.insertBefore(bar.el, diceBarContainer.lastElementChild);
+
+	diceBarContainer.scrollTop = calculateDiceBarContainerScroll(saveState.selectedBar);
+	resize();
+
 
 	go(ex => {
 		console.error("Problem with stored bar, resetting it.", ex);
 		while (diceBarContainer.lastChild)
 			diceBarContainer.removeChild(diceBarContainer.lastChild);
-		window.bar = createBar(diceBarContainer);
+		window.bar = createBar();
 		go(ex => {
 			console.error("Problem with default bar.", ex);
 			alert("Fatal error when loading page: " + ex);
@@ -250,24 +266,33 @@ window.onload = function() {
 };
 
 let scrollbarWidth = 0;
+let diceScale = 3;
 function resize() {
 	if (window.innerWidth > document.body.clientWidth)
 		scrollbarWidth = window.innerWidth - document.body.clientWidth;
 	
+	let oldDiceScale = diceScale;
 	if (window.devicePixelRatio > 1.5)
-		document.body.style.setProperty("--dice-scale", Math.min(3, (window.innerWidth - scrollbarWidth) * window.devicePixelRatio / 246 / window.devicePixelRatio));
+		diceScale = Math.min(3, (window.innerWidth - scrollbarWidth) * window.devicePixelRatio / 246 / window.devicePixelRatio);
 	else
-		document.body.style.setProperty("--dice-scale", Math.min(3, Math.floor((window.innerWidth - scrollbarWidth) * window.devicePixelRatio / 222) / window.devicePixelRatio));
+		diceScale = Math.min(3, Math.floor((window.innerWidth - scrollbarWidth) * window.devicePixelRatio / 222) / window.devicePixelRatio);
+	document.body.style.setProperty("--dice-scale", diceScale);
+
+	diceBarContainer.scrollTop *= diceScale / oldDiceScale;
 }
 window.onresize = resize;
 
+
+function calculateDiceBarContainerScroll(position) {
+	return diceScale * (42 + 20 * position);
+}
 
 
 
 function go(cb_invalid) {
 
 
-	let bar = window.bar;
+	let bar = saveState.bars[saveState.selectedBar];
 
 	globalIsEvolved = bar.isEvolved;
 
@@ -593,7 +618,6 @@ function go(cb_invalid) {
 
 	// save configuration
 
-	saveState.bars = [ { isEvolved: bar.isEvolved, dice: bar.dice.map(d => d.die.name) } ];
-	localStorage.saveState = JSON.stringify(saveState);
+	localStorage.saveState = JSON.stringify(saveState, (k, v) => k[0] == '_' || v instanceof HTMLElement ? undefined : v._json ? v._json() : v);
 
 }
