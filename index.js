@@ -205,6 +205,54 @@ function createBar(layout) {
 			scrollDiceBarContainer(getDiceBarIndex(bar.el), true);
 		};
 	}
+
+
+	let deleteEl = document.createElement("dice-bar-delete");
+	bar.el.appendChild(deleteEl);
+	deleteEl.onclick = function() {
+
+		if (saveState.bars.length == 1) {
+			for (let i = 0; i < 4; i++) {
+				const slot = bar.dice[i];
+				slot.el.removeChild(slot.dieEl);
+				slot.die = i ? dice.empty : dice.atk.single;
+				slot.dieEl = addDie(slot.die, slot.el);
+			}
+			go();
+			saveStateUpdated();
+			return;
+		}
+
+		bar.el.onclick = undefined;
+		for (let slot of bar.dice) {
+			slot.el.onclick = undefined;
+			slot.el.oncontextmenu = undefined;
+		}
+		evolvedEl.onclick = undefined;
+		deleteEl.onclick = undefined;
+
+		const diceBarIndex = getDiceBarIndex(bar.el);
+		saveState.bars.splice(diceBarIndex, 1);
+
+		if (diceBarIndex >= saveState.bars.length) {
+			saveState.selectedBar = diceBarIndex - 1;
+			scrollDiceBarContainer(saveState.selectedBar, true);
+		}
+		go();
+		saveStateUpdated();
+
+		const deleteWrapper = document.createElement("dice-bar-deleter");
+		diceBarContainer.insertBefore(deleteWrapper, bar.el);
+		deleteWrapper.appendChild(bar.el);
+		setTimeout(_ => {
+			deleteWrapper.style.height = 0;
+			setTimeout(_ => {
+				diceBarContainer.removeChild(deleteWrapper);
+			}, 600);
+		}, 0);
+	}
+
+
 	let evolvedEl = document.createElement("dice-bar-evolved");
 	if (bar.isEvolved)
 		evolvedEl.classList.add("selected");
@@ -225,6 +273,7 @@ function createBar(layout) {
 				evolvedEl.classList.remove("selected");
 		});
 	}
+
 
 	return bar;
 }
@@ -267,9 +316,6 @@ window.onload = function() {
 	for (let bar of saveState.bars)
 		diceBarContainer.insertBefore(bar.el, diceBarContainer.lastElementChild);
 
-	scrollDiceBarContainer(saveState.selectedBar);
-	resize();
-
 	diceBarContainer.onscroll = ev => {
 		let bar = getDiceBarPosition();
 		if (bar < 0 || bar >= saveState.bars.length || bar == saveState.selectedBar)
@@ -281,26 +327,24 @@ window.onload = function() {
 		go();
 	}
 
+	scrollDiceBarContainer(saveState.selectedBar);
+	resize();
+
 	diceBarContainer.firstElementChild.onclick = function() {
 		let bar = createBar();
 		diceBarContainer.insertBefore(bar.el, diceBarContainer.firstElementChild.nextElementSibling);
 		saveState.bars.unshift(bar);
 
-		saveState.selectedBar = 0;
-		scrollDiceBarContainer(0);
-		go();
-		
-		saveStateUpdated();
+		scrollDiceBarContainerRelative(1);
+
+		setTimeout(scrollDiceBarContainer, 1, 0, true);
 	}
 	diceBarContainer.lastElementChild.onclick = function() {
 		let bar = createBar();
 		diceBarContainer.insertBefore(bar.el, diceBarContainer.lastElementChild);
 		saveState.bars.push(bar);
 
-		saveState.selectedBar = saveState.bars.length - 1;
-		go();
-		
-		saveStateUpdated();
+		scrollDiceBarContainer(saveState.bars.length - 1, true);
 	}
 
 	go(ex => {
@@ -308,8 +352,8 @@ window.onload = function() {
 		if (DEBUG)
 			return;
 
-		while (diceBarContainer.children.length > 2)
-			diceBarContainer.removeChild(diceBarContainer.firstElementChild.nextElementSibling);
+		for (let bar of diceBarContainer.getElementsByTagName("dice-bar"))
+			diceBarContainer.removeChild(bar);
 		saveState = {
 			selectedBar: 0,
 			bars: [ createBar([ dice.empty.name, dice.atk.single.name, dice.atk.single.name, dice.atk.single.name ]) ],
@@ -344,7 +388,7 @@ window.onresize = resize;
 
 
 function getDiceBarIndex(el) {
-	const index = [...diceBarContainer.children].indexOf(el) - 1;
+	const index = [...diceBarContainer.getElementsByTagName("dice-bar")].indexOf(el);
 	if (index < 0)
 		throw new error("Negative dice bar index", el);
 	return index;
@@ -352,13 +396,19 @@ function getDiceBarIndex(el) {
 function getDiceBarPosition() {
 	return Math.round((diceBarContainer.scrollTop / diceScale - 2) / 60) - 1;
 }
-
-function diceBarContainerScrollPosition(position) {
-	return diceScale * (2 + 60 * (position + 1));
+function _diceBarContainerScrollOffset(offset) {
+	return diceScale * 60 * offset;
+}
+function _diceBarContainerScrollPosition(position) {
+	return diceScale * 2 + _diceBarContainerScrollOffset(position + 1);
+}
+function scrollDiceBarContainerRelative(offset) {
+	diceBarContainer.scrollTop += _diceBarContainerScrollOffset(offset);
 }
 function scrollDiceBarContainer(position, smooth) {
+	diceBarContainer.onscroll();
 	diceBarContainer.scrollTo({
-		top: diceBarContainerScrollPosition(position),
+		top: _diceBarContainerScrollPosition(position),
 		behavior: smooth ? "smooth" : "auto",
 	});
 }

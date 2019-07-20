@@ -132,15 +132,15 @@ dice-bar-adder {
 }
 dice-bar-adder:before, dice-bar-adder:after {
     content: "";
-	position: absolute;
-	top: 0;
-	left: 0;
-	bottom: 0;
-	right: 0;
-	margin: auto;
-	display: block;
-	background: green;
-	border-radius: 8px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin: auto;
+    display: block;
+    background: green;
+    border-radius: 8px;
 }
 dice-bar-adder:before {
 	width: calc(var(--dice-scale) * 8px);
@@ -355,11 +355,41 @@ result-list:not(.show-hidden-results) a.hidden-results-toggle:before {
 result-list.show-hidden-results a.hidden-results-toggle:before {
 	content: "hide hidden results";
 }
+dice-bar-delete {
+    display: block;
+    float: right;
+    margin: calc(var(--dice-scale) * 3px);
+    height: calc(var(--dice-scale) * 7px);
+    margin-left: 0;
+    width: calc(var(--dice-scale) * 7px);
+	position: relative;
+	cursor: pointer;
+}
+dice-bar-delete:before, dice-bar-delete:after {
+	content: "";
+	position: absolute;
+	background-color: red;
+	width: calc(var(--dice-scale) * 1.5px);
+	height: calc(var(--dice-scale) * 9px);
+	border-radius: calc(var(--dice-scale) * 3px);
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	margin: auto;
+	display: block;
+}
+dice-bar-delete:before {
+	transform: rotate(45deg);
+}
+dice-bar-delete:after {
+	transform: rotate(135deg);
+}
 dice-bar-evolved {
     display: block;
     float: right;
     margin: calc(var(--dice-scale) * 3px);
-    height: calc(var(--dice-scale) * 46px);
+    height: calc(var(--dice-scale) * 33px);
     margin-left: 0;
     width: calc(var(--dice-scale) * 7px);
     position: relative;
@@ -373,12 +403,12 @@ dice-bar-evolved:before {
     line-height: calc(var(--dice-scale) * 7px);
     text-align: right;
     color: #c8c8c8;
-    letter-spacing: .05em;
+    letter-spacing: calc(var(--dice-scale) * 0.2px);
     cursor: pointer;
     position: absolute;
     bottom: 0;
-	padding-bottom: calc(var(--dice-scale) * 9px);
-    font-size: calc(var(--dice-scale) * 6px);
+    padding-bottom: calc(var(--dice-scale) * 9px);
+    font-size: calc(var(--dice-scale) * 5.5px);
 }
 dice-bar-evolved:after {
     content: "";
@@ -393,4 +423,16 @@ dice-bar-evolved:after {
 }
 dice-bar-evolved.selected:after {
     background-color: green;
+}
+dice-bar-deleter dice-bar {
+    height: calc(100% - var(--dice-scale) * 8px);
+    overflow: hidden;
+}
+dice-bar-deleter {
+    display: block;
+    height: calc(var(--dice-scale) * 60px);
+    margin-top: calc(var(--dice-scale) * -4px);
+    margin-bottom: calc(var(--dice-scale) * 4px);
+    transition: height .6s;
+    overflow: hidden;
 }
