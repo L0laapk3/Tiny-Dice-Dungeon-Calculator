@@ -482,7 +482,7 @@ function go(cb_invalid) {
 	const lastSlot = riskyDieSlots[multiplierConfigurationsPerStartDie[multiplierConfigurationsPerStartDie.length-1].startDieIndex];
 
 	// this assumes that a dice set has only 1 type of dice.
-	let highestValueWithLastDiceSet = lastSlot.die.max * (multiplierConfigurationsPerStartDie[multiplierConfigurationsPerStartDie.length-1].startDieIndex + 1);
+	let highestValueWithLastDiceSet = lastSlot.die.max * lastSlot.die.mul * (multiplierConfigurationsPerStartDie[multiplierConfigurationsPerStartDie.length-1].startDieIndex + 1);
 	if (multiplierConfigurationsPerStartDie[multiplierConfigurationsPerStartDie.length-1].startDieIndex == 1)
 		highestValueWithLastDiceSet *= lastSlot.die.doubleMultiplier;
 	if (multiplierConfigurationsPerStartDie[multiplierConfigurationsPerStartDie.length-1].startDieIndex == 2)
@@ -563,11 +563,11 @@ function go(cb_invalid) {
 				sameDieCount = 1;
 			} else {
 				if (++sameDieCount == 2)
-					highestPoint += riskyDieSlots[i].die.max * multiplier * 2 * (riskyDieSlots[i].die.doubleMultiplier - 1);
+					highestPoint += riskyDieSlots[i].die.max * riskyDieSlots[i].die.mul * multiplier * 2 * (riskyDieSlots[i].die.doubleMultiplier - 1);
 				if (sameDieCount == 3)
-					highestPoint += riskyDieSlots[i].die.max * multiplier * (3 * (riskyDieSlots[i].die.tripleMultiplier - 1) - (2 * (riskyDieSlots[i].die.doubleMultiplier - 1)));
+					highestPoint += riskyDieSlots[i].die.max * riskyDieSlots[i].die.mul * multiplier * (3 * (riskyDieSlots[i].die.tripleMultiplier - 1) - (2 * (riskyDieSlots[i].die.doubleMultiplier - 1)));
 			}
-			highestPoint += riskyDieSlots[i].die.max * multiplier;
+			highestPoint += riskyDieSlots[i].die.max * riskyDieSlots[i].die.mul * multiplier;
 
 			lastDieName = riskyDieSlots[i].die.name;
 		}
