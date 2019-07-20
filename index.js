@@ -142,7 +142,7 @@ function createBar(target, layout) {
 	let bar = {
 		el: document.createElement("dice-bar"),
 		dice: [],
-		isEvolved: layout.isEvolved,
+		isEvolved: layout && layout.isEvolved,
 	}
 	for (let i = 0; i < 4; i++) {
 		const slot = {
