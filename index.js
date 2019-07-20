@@ -156,6 +156,22 @@ function createBar(target, layout) {
 		slot.el.onclick = function() {
 			createSelector(slot);
 		};
+		slot.el.oncontextmenu = function() {
+			const originalDieEl = slot.dieEl;
+			const originalDie = slot.die;
+			slot.el.removeChild(originalDieEl);
+			slot.die = dice.empty;
+			slot.dieEl = addDie(dice.empty, slot.el);
+			go(ex => {
+				console.error(ex);
+				alert(ex);
+				slot.el.removeChild(slot.dieEl);
+				slot.die = originalDie;
+				slot.dieEl = originalDieEl;
+				slot.el.appendChild(slot.dieEl);
+			});
+			return false;
+		};
 
 		bar.dice.push(slot);
 
@@ -466,9 +482,7 @@ function go(cb_invalid) {
 	const lastSlot = riskyDieSlots[multiplierConfigurationsPerStartDie[multiplierConfigurationsPerStartDie.length-1].startDieIndex];
 
 	// this assumes that a dice set has only 1 type of dice.
-	console.log(multiplierConfigurationsPerStartDie[multiplierConfigurationsPerStartDie.length-1].startDieIndex)
 	let highestValueWithLastDiceSet = lastSlot.die.max * (multiplierConfigurationsPerStartDie[multiplierConfigurationsPerStartDie.length-1].startDieIndex + 1);
-	console.log(highestValueWithLastDiceSet, lastSlot.die)
 	if (multiplierConfigurationsPerStartDie[multiplierConfigurationsPerStartDie.length-1].startDieIndex == 1)
 		highestValueWithLastDiceSet *= lastSlot.die.doubleMultiplier;
 	if (multiplierConfigurationsPerStartDie[multiplierConfigurationsPerStartDie.length-1].startDieIndex == 2)
