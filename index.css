@@ -244,7 +244,12 @@ result-list table th,
 result-list table td {
 	padding: .3em .5em;
 }
-
+result-list:not(.show-hidden-results) table td:not(:first-child).result-hidden:before {
+	content: "-";
+}
+result-list table td:not(:first-child):before {
+	content: attr(data-value);
+}
 result-list table.single-result th:first-child,
 result-list table.single-result td:first-child {
 	display: none
@@ -277,8 +282,14 @@ result-list die:before {
 result-list die:after {
 	content: initial;
 }
-#show-hidden-results {
+result-list:not(.has-hidden-results) a.hidden-results-toggle {
 	display: none;
+}
+result-list:not(.show-hidden-results) a.hidden-results-toggle:before {
+	content: "show hidden results";
+}
+result-list.show-hidden-results a.hidden-results-toggle:before {
+	content: "hide hidden results";
 }
 dice-bar-evolved {
     display: block;

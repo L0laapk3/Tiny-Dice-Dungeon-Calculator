@@ -195,7 +195,14 @@ window.onload = function() {
 
 	resultList = document.getElementById("result-list-simple");
 	orderList = document.getElementById("order-list");
-	hiddenResultsLink = document.getElementById("result-hidden-results");
+	for (let a of [...document.getElementsByClassName("hidden-results-toggle")])
+		a.onclick = _ => {
+			if (a.parentNode.classList.contains("show-hidden-results"))
+				a.parentNode.classList.remove("show-hidden-results");
+			else
+				a.parentNode.classList.add("show-hidden-results");
+			return false;
+		};
 
 	let restoredBars = [];
 	try {
@@ -240,13 +247,13 @@ function go(cb_invalid) {
 	globalIsEvolved = bar.isEvolved;
 
 	let barDiceCopy = bar.dice.map(slot => ({...slot}));
-	let safeDice = barDiceCopy.filter(slot => slot.die.type != "empty" && !slot.die.risky).reverse().sort((a, b) => (a.die.type == "mul") - (b.die.type == "mul") || a.die.min - b.die.min || a.die.max - b.die.max)
-	let riskyDice = barDiceCopy.filter(slot => slot.die.type != "empty" && slot.die.risky).reverse().sort((a, b) => a.die.mul - b.die.mul);
+	let safeDieSlots = barDiceCopy.filter(slot => slot.die.type != "empty" && !slot.die.risky).reverse().sort((a, b) => (a.die.type == "mul") - (b.die.type == "mul") || a.die.min - b.die.min || a.die.max - b.die.max)
+	let riskyDieSlots = barDiceCopy.filter(slot => slot.die.type != "empty" && slot.die.risky).reverse().sort((a, b) => a.die.mul - b.die.mul);
 
 	// validate inputs
 	try {
 
-		if (riskyDice.length < 1)
+		if (riskyDieSlots.length < 1)
 			throw new Error("There needs to be at least 1 risky dice to calculate anything meaningful.");
 
 		for (let slot of bar.dice)
@@ -274,17 +281,17 @@ function go(cb_invalid) {
 	// }
 	
 
-	const avMul = safeDice.filter(d => d.die.type == "mul").map(d => (d.die.min + d.die.max) / 2).reduce((p, q) => p * q, 1);
+	const avMul = safeDieSlots.filter(d => d.die.type == "mul").map(d => (d.die.min + d.die.max) / 2).reduce((p, q) => p * q, 1);
 	
-	let multiplierConfigurationTemplate = { 1: { multiplier: 1, breakEvenPoint: 0 } };
-	for (let dieIndex = 0; dieIndex < safeDice.length; dieIndex++) {
-		const die = safeDice[dieIndex].die;
+	let multiplierConfigurationTemplate = { 1: { multiplier: 1, breakEvenPoint: 0, hidden: false, maxIncreaseFromPreviousSet: 0 } };
+	for (let dieIndex = 0; dieIndex < safeDieSlots.length; dieIndex++) {
+		const die = safeDieSlots[dieIndex].die;
 		if (die.type != "mul")
 			continue;
 		const newMultipliers = {};
 		for (let prev of Object.values(multiplierConfigurationTemplate))
 				for (let nowMultiplier = die.min; nowMultiplier <= die.max; nowMultiplier++)
-					newMultipliers[nowMultiplier * prev.multiplier] = { multiplier: nowMultiplier * prev.multiplier, breakEvenPoint: 0 };
+					newMultipliers[nowMultiplier * prev.multiplier] = { multiplier: nowMultiplier * prev.multiplier, breakEvenPoint: 0, hidden: false, maxIncreaseFromPreviousSet: 0 };
 
 		multiplierConfigurationTemplate = newMultipliers;
 	}
@@ -296,15 +303,15 @@ function go(cb_invalid) {
 	while (orderList.lastChild)
 		orderList.removeChild(orderList.lastChild);
 	let needsFirstArrow = false;
-	for (let i = safeDice.length - 1; i >= 0; i--) {
+	for (let i = safeDieSlots.length - 1; i >= 0; i--) {
 		const container = document.createElement("small-die-container");
-		addDie(safeDice[i].die, container, safeDice[i].dieEl);
+		addDie(safeDieSlots[i].die, container, safeDieSlots[i].dieEl);
 		orderList.appendChild(container);
 		needsFirstArrow = true;
 	}
 	let lastDieName;
-	for (let i = riskyDice.length - 1; i >= 0; i--) {
-		if (lastDieName != riskyDice[i].die.name) {
+	for (let i = riskyDieSlots.length - 1; i >= 0; i--) {
+		if (lastDieName != riskyDieSlots[i].die.name) {
 			const mulConfig = {}
 			for (let [key, value] of Object.entries(multiplierConfigurationTemplate))
 				mulConfig[key] = {...value};
@@ -315,16 +322,16 @@ function go(cb_invalid) {
 			multiplierConfigurationsPerStartDie.push(config);
 		}
 		if (needsFirstArrow) {
-			if (lastDieName != riskyDice[i].die.name) {
+			if (lastDieName != riskyDieSlots[i].die.name) {
 				const arrow = document.createElement("span");
 				arrow.innerText = ">";
 				orderList.appendChild(arrow)
 			}
 		} else
 			needsFirstArrow = true;
-		lastDieName = riskyDice[i].die.name;
+		lastDieName = riskyDieSlots[i].die.name;
 		const container = document.createElement("small-die-container");
-		addDie(riskyDice[i].die, container, riskyDice[i].dieEl);
+		addDie(riskyDieSlots[i].die, container, riskyDieSlots[i].dieEl);
 		orderList.appendChild(container);
 	}
 
@@ -347,9 +354,9 @@ function go(cb_invalid) {
 		do {
 			anyIncreased = false;
 
-			for (let _ of riskyDice) {
+			for (let _ of riskyDieSlots) {
 
-				let currentDie = riskyDice[currentDieIndex].die;
+				let currentDie = riskyDieSlots[currentDieIndex].die;
 				let diff = currentDie.max - currentDie.min;
 				let av = (currentDie.max + currentDie.min + 1) / 2 * currentDie.mul;
 
@@ -418,10 +425,10 @@ function go(cb_invalid) {
 					thrownRiskyDice.push(currentDie);
 				else {
 					// all dices are reset, throw all safe dice
-					currentDieIndex = riskyDice.length - 1;
+					currentDieIndex = riskyDieSlots.length - 1;
 					thrownRiskyDice = []
 					isCurrentThrow = false;
-					for (let slot of safeDice)
+					for (let slot of safeDieSlots)
 						if (slot.die.type == "atk")	//todo: account for double/triple chance
 							avNextGain += (slot.die.max + slot.die.min) / 2 * slot.die.mul;
 				}
@@ -453,6 +460,22 @@ function go(cb_invalid) {
 
 
 
+	// calculate max gains between each throw step to hide unnecessary results
+
+	const highestLastConfig = Object.values(multiplierConfigurationsPerStartDie[multiplierConfigurationsPerStartDie.length-1].multiplierConfigurations).reduce((r, p) => p.multiplier > r.multiplier ? p : r);
+	const lastSlot = riskyDieSlots[multiplierConfigurationsPerStartDie[multiplierConfigurationsPerStartDie.length-1].startDieIndex];
+
+	// this assumes that a dice set has only 1 type of dice.
+	console.log(multiplierConfigurationsPerStartDie[multiplierConfigurationsPerStartDie.length-1].startDieIndex)
+	let highestValueWithLastDiceSet = lastSlot.die.max * (multiplierConfigurationsPerStartDie[multiplierConfigurationsPerStartDie.length-1].startDieIndex + 1);
+	console.log(highestValueWithLastDiceSet, lastSlot.die)
+	if (multiplierConfigurationsPerStartDie[multiplierConfigurationsPerStartDie.length-1].startDieIndex == 1)
+		highestValueWithLastDiceSet *= lastSlot.die.doubleMultiplier;
+	if (multiplierConfigurationsPerStartDie[multiplierConfigurationsPerStartDie.length-1].startDieIndex == 2)
+		highestValueWithLastDiceSet *= lastSlot.die.tripleMultiplier;
+
+	const highestLastPoint = highestLastConfig.breakEvenPoint + highestLastConfig.multiplier * highestValueWithLastDiceSet;
+
 
 
 	// plot results
@@ -474,46 +497,73 @@ function go(cb_invalid) {
 
 	lastDieName = undefined;
 	let resEl, beforeEl;
-	for (let i = riskyDice.length - 1; i >= 0; i--) {
-		if (lastDieName != riskyDice[i].die.name) {
+	for (let i = riskyDieSlots.length - 1; i >= 0; i--) {
+		if (lastDieName != riskyDieSlots[i].die.name) {
 			if (lastDieName) {
 				beforeEl = document.createElement("br");
 				resEl.appendChild(beforeEl);
-				resEl.appendChild(document.createTextNode("Stop at"));
+				resEl.appendChild(document.createTextNode("Roll until"));
 				rowEl.appendChild(resEl);
 			}
 			resEl = document.createElement("th");
 		}
-		lastDieName = riskyDice[i].die.name;
+		lastDieName = riskyDieSlots[i].die.name;
 		const container = document.createElement("small-die-container");
-		addDie(riskyDice[i].die, container, riskyDice[i].dieEl);
+		addDie(riskyDieSlots[i].die, container, riskyDieSlots[i].dieEl);
 		resEl.appendChild(container);
 	}
 	beforeEl = document.createElement("br");
 	resEl.appendChild(beforeEl);
-	resEl.appendChild(document.createTextNode("Stop at"));
+	resEl.appendChild(document.createTextNode("Roll until"));
 	rowEl.appendChild(resEl);
 	resultList.appendChild(rowEl);
 
+	let hasHiddenResults = false;
+
 	for (let multiplier of Object.values(multiplierConfigurationsPerStartDie[0].multiplierConfigurations).map(c => c.multiplier).sort((a, b) => a - b)) {
+
 		const rowEl = document.createElement("tr");
 		const mulEl = document.createElement("td");
 		mulEl.innerText = multiplier;
 		rowEl.appendChild(mulEl);
 
+
+		let highestPoint = highestLastPoint;
+
 		lastDieName = undefined;
-		let j = 0;
-		for (let i = riskyDice.length - 1; i >= 0; i--) {
-			if (lastDieName != riskyDice[i].die.name) {
+		let j = 0, sameDieCount;
+		for (let i = riskyDieSlots.length - 1; i >= 0; i--) {
+			if (lastDieName != riskyDieSlots[i].die.name) {
 				const resEl = document.createElement("td");
-				resEl.innerText = Math.round(multiplierConfigurationsPerStartDie[j++].multiplierConfigurations[multiplier].breakEvenPoint * 10) / 10;
+				const breakEvenValue = multiplierConfigurationsPerStartDie[j++].multiplierConfigurations[multiplier].breakEvenPoint;
+				resEl.setAttribute("data-value", Math.round(breakEvenValue * 10) / 10);
+
+				if (breakEvenValue - 0.1 >= highestPoint) {
+					resEl.classList.add("result-hidden");
+					hasHiddenResults = true;
+				} else
+					highestPoint = breakEvenValue;
+
 				rowEl.appendChild(resEl);
+
+				sameDieCount = 1;
+			} else {
+				if (++sameDieCount == 2)
+					highestPoint += riskyDieSlots[i].die.max * multiplier * 2 * (riskyDieSlots[i].die.doubleMultiplier - 1);
+				if (sameDieCount == 3)
+					highestPoint += riskyDieSlots[i].die.max * multiplier * (3 * (riskyDieSlots[i].die.tripleMultiplier - 1) - (2 * (riskyDieSlots[i].die.doubleMultiplier - 1)));
 			}
-			lastDieName = riskyDice[i].die.name;
+			highestPoint += riskyDieSlots[i].die.max * multiplier;
+
+			lastDieName = riskyDieSlots[i].die.name;
 		}
 		resultList.appendChild(rowEl);
 	}
-
+	
+	if (hasHiddenResults)
+		resultList.parentNode.classList.add("has-hidden-results");
+	else
+		resultList.parentNode.classList.remove("has-hidden-results", "show-hidden-results");
 
 
 
