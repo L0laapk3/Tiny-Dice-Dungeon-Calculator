@@ -246,9 +246,9 @@ function resize() {
 		scrollbarWidth = window.innerWidth - document.body.clientWidth;
 	
 	if (window.devicePixelRatio > 1.5)
-		document.body.style.setProperty("--dice-scale", Math.min(3, (window.innerWidth - scrollbarWidth) * window.devicePixelRatio / 222 / window.devicePixelRatio));
+		document.body.style.setProperty("--dice-scale", Math.min(3, (window.innerWidth - scrollbarWidth) * window.devicePixelRatio / 246 / window.devicePixelRatio));
 	else
-		document.body.style.setProperty("--dice-scale", Math.min(3, Math.floor((window.innerWidth - scrollbarWidth) * window.devicePixelRatio / 246) / window.devicePixelRatio));
+		document.body.style.setProperty("--dice-scale", Math.min(3, Math.floor((window.innerWidth - scrollbarWidth) * window.devicePixelRatio / 222) / window.devicePixelRatio));
 }
 window.onresize = resize;
 
