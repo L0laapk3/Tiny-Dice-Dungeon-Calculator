@@ -13,7 +13,7 @@ body {
 main-container {
 	padding: calc(var(--dice-scale) * 12px);
 	display: block;
-	padding-bottom: calc(var(--dice-scale) * 96px);
+	padding-bottom: calc(var(--dice-scale) * 108px);
 	position: absolute;
 }
 
@@ -89,30 +89,27 @@ dice-bar-container {
     overflow-y: scroll;
     overflow-x: hidden;
     scroll-snap-type: y mandatory;
-    scroll-padding-block: calc(var(--dice-scale) * 16px);
+	scroll-padding-block: calc(var(--dice-scale) * 16px);
+	box-shadow: inset 0 calc(var(--dice-scale) * 16px) calc(var(--dice-scale) * 8px) calc(var(--dice-scale) * -12px) #272b30;
 }
 dice-bar-container::-webkit-scrollbar {
     display: none;
 }
-dice-bar-container:before {
+dice-bar-container:before, dice-bar-container:after {
     content: "";
     position: fixed;
     z-index: 104;
     width: 100vw;
     display: block;
-    background: linear-gradient(0, transparent 0, #272b30 50%, transparent 100%);
-    bottom: calc(var(--dice-scale) * 72px);
-    height: calc(var(--dice-scale) * 32px);
+    pointer-events: none;
+}
+dice-bar-container:before {
+	bottom: calc(var(--dice-scale) * 92px);
+	box-shadow: 0 0 calc(var(--dice-scale) * 8px) calc(var(--dice-scale) * 12px) #272b30;
 }
 dice-bar-container:after {
-    content: "";
-    position: fixed;
-    z-index: 104;
-    width: 100vw;
-    display: block;
-    background: linear-gradient(0, #272b30 0, transparent 100%);
     bottom: 0;
-    height: calc(var(--dice-scale) * 12px);
+	box-shadow: 0 calc(var(--dice-scale) * 4px) calc(var(--dice-scale) * 8px) calc(var(--dice-scale) * 12px) #272b30;
 }
 dice-bar, dice-bar-adder {
 	display: block;

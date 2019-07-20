@@ -252,6 +252,14 @@ window.onload = function() {
 	diceBarContainer.scrollTop = calculateDiceBarContainerScroll(saveState.selectedBar);
 	resize();
 
+	diceBarContainer.firstElementChild.onclick = function() {
+		saveState.bars.unshift(createBar);
+		++saveState.selectedBar;
+		diceBarContainer.scrollTop += calculateDiceBarContainerScrollStep();
+	}
+	diceBarContainer.lastElementChild.onclick = function() {
+		saveState.bars.push(createBar);
+	}
 
 	go(ex => {
 		console.error("Problem with stored bar, resetting it.", ex);
@@ -283,8 +291,11 @@ function resize() {
 window.onresize = resize;
 
 
+function calculateDiceBarContainerScrollStep() {
+	return diceScale * 20;
+}
 function calculateDiceBarContainerScroll(position) {
-	return diceScale * (42 + 20 * position);
+	return diceScale * 42 + calculateDiceBarContainerScrollStep() * position;
 }
 
 
