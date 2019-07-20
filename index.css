@@ -48,6 +48,7 @@ die {
 }
 die:before {
 	display: block;
+	will-change: opacity;
 	background-blend-mode: multiply;
     -webkit-mask-image: url(SpriteSheet.png);
     mask-image: url(SpriteSheet.png);
@@ -376,7 +377,8 @@ dice-bar-evolved:before {
     cursor: pointer;
     position: absolute;
     bottom: 0;
-    padding-bottom: calc(var(--dice-scale) * 9px);
+	padding-bottom: calc(var(--dice-scale) * 9px);
+    font-size: calc(var(--dice-scale) * 6px);
 }
 dice-bar-evolved:after {
     content: "";
