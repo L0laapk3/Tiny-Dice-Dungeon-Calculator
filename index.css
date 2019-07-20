@@ -92,6 +92,9 @@ dice-bar-container {
 	scroll-padding-block: calc(var(--dice-scale) * 16px);
 	box-shadow: inset 0 calc(var(--dice-scale) * 16px) calc(var(--dice-scale) * 8px) calc(var(--dice-scale) * -12px) #272b30;
 }
+dice-bar-container.locked {
+	overflow-y: hidden;
+}
 dice-bar-container::-webkit-scrollbar {
     display: none;
 }

@@ -1,4 +1,4 @@
-
+const DEBUG = true;
 
 function addDie(prototype, target, variationClone) {
 	let die = document.createElement("die");
@@ -86,6 +86,15 @@ let selectorExists = undefined;
 function createSelector(slot) {
 	if (selectorExists)
 		return;
+
+	const barDiceIndex = getDiceBarIndex(slot.el.parentNode);
+	if (barDiceIndex != saveState.selectedBar)
+		return;
+
+	scrollDiceBarContainer(barDiceIndex);
+	lockDiceBarContainerScroll();
+
+
 	let selector = document.createElement("die-selector");
 	const target = slot.el;
 	const originalDieEl = slot.dieEl;
@@ -130,10 +139,9 @@ function createSelector(slot) {
 	container.appendChild(selector);
 	target.insertBefore(container, target.firstChild);
 
-	return container;
-
 
 	function destructSelector(ev) {
+		unlockDiceBarContainerScroll();
 		originalDieEl.onclick = undefined;
 		target.removeChild(container);
 		target.parentNode.removeChild(bgOverlay);
@@ -141,6 +149,9 @@ function createSelector(slot) {
 		selectorExists = undefined;
 		ev.stopPropagation();
 	}
+
+
+	return container;
 }
 
 function Slot(properties) {
@@ -189,6 +200,10 @@ function createBar(layout) {
 		bar.dice.push(slot);
 
 		bar.el.appendChild(slot.el);
+
+		bar.el.onclick = ev => {
+			scrollDiceBarContainer(getDiceBarIndex(bar.el), true);
+		};
 	}
 	let evolvedEl = document.createElement("dice-bar-evolved");
 	if (bar.isEvolved)
@@ -219,6 +234,9 @@ try {
 	saveState = JSON.parse(localStorage.saveState);
 	if (!(saveState.selectedBar < saveState.bars.length))
 		saveState.selectedBar = saveState.bars.length;
+	
+	saveState.bars = saveState.bars.map(createBar);
+
 } catch (_) {
 	saveState = {
 		selectedBar: 0,
@@ -226,7 +244,7 @@ try {
 	};
 }
 if (!saveState.bars.length)
-	saveState.bars[0] = [ dice.empty.name, dice.atk.single.name, dice.atk.single.name, dice.atk.single.name ]
+	saveState.bars[0] = createBar([ dice.empty.name, dice.atk.single.name, dice.atk.single.name, dice.atk.single.name ]);
 
 
 window.onload = function() {
@@ -245,32 +263,66 @@ window.onload = function() {
 		};
 
 	diceBarContainer = document.getElementById("dice-bar-container");
-	saveState.bars = saveState.bars.map(createBar);
+
 	for (let bar of saveState.bars)
 		diceBarContainer.insertBefore(bar.el, diceBarContainer.lastElementChild);
 
-	diceBarContainer.scrollTop = calculateDiceBarContainerScroll(saveState.selectedBar);
+	scrollDiceBarContainer(saveState.selectedBar);
 	resize();
 
+	diceBarContainer.onscroll = ev => {
+		let bar = getDiceBarPosition();
+		if (bar < 0 || bar >= saveState.bars.length || bar == saveState.selectedBar)
+			return;
+		
+		saveState.selectedBar = bar;
+		saveStateUpdated();
+
+		go();
+	}
+
 	diceBarContainer.firstElementChild.onclick = function() {
-		saveState.bars.unshift(createBar);
-		++saveState.selectedBar;
-		diceBarContainer.scrollTop += calculateDiceBarContainerScrollStep();
+		let bar = createBar();
+		diceBarContainer.insertBefore(bar.el, diceBarContainer.firstElementChild.nextElementSibling);
+		saveState.bars.unshift(bar);
+
+		saveState.selectedBar = 0;
+		scrollDiceBarContainer(0);
+		go();
+		
+		saveStateUpdated();
 	}
 	diceBarContainer.lastElementChild.onclick = function() {
-		saveState.bars.push(createBar);
+		let bar = createBar();
+		diceBarContainer.insertBefore(bar.el, diceBarContainer.lastElementChild);
+		saveState.bars.push(bar);
+
+		saveState.selectedBar = saveState.bars.length - 1;
+		go();
+		
+		saveStateUpdated();
 	}
 
 	go(ex => {
-		console.error("Problem with stored bar, resetting it.", ex);
-		while (diceBarContainer.lastChild)
-			diceBarContainer.removeChild(diceBarContainer.lastChild);
-		window.bar = createBar();
+		console.error("Problem with stored bar, resetting config.", ex);
+		if (DEBUG)
+			return;
+
+		while (diceBarContainer.children.length > 2)
+			diceBarContainer.removeChild(diceBarContainer.firstElementChild.nextElementSibling);
+		saveState = {
+			selectedBar: 0,
+			bars: [ createBar([ dice.empty.name, dice.atk.single.name, dice.atk.single.name, dice.atk.single.name ]) ],
+		}
+		diceBarContainer.insertBefore(saveState.bars[0].el, diceBarContainer.lastElementChild);
+
 		go(ex => {
 			console.error("Problem with default bar.", ex);
 			alert("Fatal error when loading page: " + ex);
 		});
 	});
+
+	saveStateUpdated();
 };
 
 let scrollbarWidth = 0;
@@ -291,17 +343,42 @@ function resize() {
 window.onresize = resize;
 
 
-function calculateDiceBarContainerScrollStep() {
-	return diceScale * 20;
+function getDiceBarIndex(el) {
+	const index = [...diceBarContainer.children].indexOf(el) - 1;
+	if (index < 0)
+		throw new error("Negative dice bar index", el);
+	return index;
 }
-function calculateDiceBarContainerScroll(position) {
-	return diceScale * 42 + calculateDiceBarContainerScrollStep() * position;
+function getDiceBarPosition() {
+	return Math.round((diceBarContainer.scrollTop / diceScale - 2) / 60) - 1;
 }
 
+function diceBarContainerScrollPosition(position) {
+	return diceScale * (2 + 60 * (position + 1));
+}
+function scrollDiceBarContainer(position, smooth) {
+	diceBarContainer.scrollTo({
+		top: diceBarContainerScrollPosition(position),
+		behavior: smooth ? "smooth" : "auto",
+	});
+}
+function lockDiceBarContainerScroll() {
+	diceBarContainer.classList.add("locked");
+}
+function unlockDiceBarContainerScroll() {
+	diceBarContainer.classList.remove("locked");
+}
 
 
 function go(cb_invalid) {
 
+	if (!cb_invalid)
+		cb_invalid = ex => {
+			console.error("Problem with bar.", ex);
+			alert("Fatal error while simulating dice bar: " + ex);
+
+			// TODO: delete bar
+		}
 
 	let bar = saveState.bars[saveState.selectedBar];
 
@@ -623,12 +700,10 @@ function go(cb_invalid) {
 		resultList.parentNode.classList.add("has-hidden-results");
 	else
 		resultList.parentNode.classList.remove("has-hidden-results", "show-hidden-results");
+}
 
 
 
-
-	// save configuration
-
+function saveStateUpdated() {
 	localStorage.saveState = JSON.stringify(saveState, (k, v) => k[0] == '_' || v instanceof HTMLElement ? undefined : v._json ? v._json() : v);
-
 }
