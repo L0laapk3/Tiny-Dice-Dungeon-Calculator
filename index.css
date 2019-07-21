@@ -176,6 +176,7 @@ die-selector-column {
 	display: inline-block;
 	position: relative;
 	z-index: 104;
+    vertical-align: top;
 }
 die-selector-column die:not(:first-child):before {
 	margin-top: calc(var(--dice-scale) * 9px);

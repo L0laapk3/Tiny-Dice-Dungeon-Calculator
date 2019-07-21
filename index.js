@@ -35,10 +35,10 @@ let dice = {
 		text: "empty slot"
 	})
 };
-let diceOrder = [];
-let diceByName = { empty: Die.empty };
+let selectorColumns = [ [dice.empty], [], [], [] ];
+let diceByName = { empty: dice.empty };
 let globalIsEvolved = false;
-function addDieType(subname, type, min, max, mul, color, text) {
+function addDieType(subname, type, min, max, mul, color, text, selectorColumn) {
 	const name = type + subname;
 	let die = new Die({
 		name: name,
@@ -56,30 +56,30 @@ function addDieType(subname, type, min, max, mul, color, text) {
 		get: _ => globalIsEvolved ? die._max + 1 : die._max
 	});
 	dice[type][subname] = die;
-	diceOrder.push(die);
+	selectorColumns[selectorColumn].push(die);
 	diceByName[name] = die;
 }
 
-addDieType("single"	, "atk", 1, 6, 1, "#ffffff", "single");
+addDieType("single"	, "atk", 1, 6, 1, "#ffffff", "single", 0);
 
-addDieType("x2"		, "atk", 1, 6, 2, "#781713", "double");
-addDieType("x3"		, "atk", 1, 6, 3, "#921514", "triple");
-addDieType("x4"		, "atk", 1, 6, 4, "#A91514", "quadruple");
-addDieType("x5"		, "atk", 1, 6, 5, "#C01710", "quintuple");
-addDieType("x6"		, "atk", 1, 6, 6, "#E01710", "sextuple");
+addDieType("x2"		, "atk", 1, 6, 2, "#781713", "double", 1);
+addDieType("x3"		, "atk", 1, 6, 3, "#921514", "triple", 1);
+addDieType("x4"		, "atk", 1, 6, 4, "#A91514", "quadruple", 1);
+addDieType("x5"		, "atk", 1, 6, 5, "#C01710", "quintuple", 1);
+addDieType("x6"		, "atk", 1, 6, 6, "#E01710", "sextuple", 1);
 
-addDieType("p1"		, "atk", 2, 6, 1, "#773712", "> 1");
-//addDieType("p2"		, "atk", 3, 6, 1, "#A94D10", "> 2");
-addDieType("p3"		, "atk", 4, 6, 1, "#DB630E", "> 3");
+addDieType("p1"		, "atk", 2, 6, 1, "#773712", "> 1", 0);
+addDieType("p2"		, "atk", 3, 6, 1, "#A94D10", "> 2", 0);
+addDieType("p3"		, "atk", 4, 6, 1, "#DB630E", "> 3", 0);
 
-addDieType("x2"		, "mul", 1, 2, 1, "#484201", "mult 1-2");
-addDieType("x3"		, "mul", 1, 3, 1, "#544C0A", "mult 1-3");
-addDieType("x4"		, "mul", 1, 4, 1, "#5F5912", "mult 1-4");
-addDieType("x5"		, "mul", 1, 5, 1, "#6B631C", "mult 1-5");
-addDieType("x6"		, "mul", 1, 6, 1, "#776F24", "mult 1-6");
-addDieType("p1"		, "mul", 2, 6, 1, "#906E25", "mult > 1");
-addDieType("p2"		, "mul", 3, 6, 1, "#A88621", "mult > 2");
-addDieType("p3"		, "mul", 4, 6, 1, "#C09A27", "mult > 3");
+addDieType("x2"		, "mul", 1, 2, 1, "#484201", "mult 1-2", 2);
+addDieType("x3"		, "mul", 1, 3, 1, "#544C0A", "mult 1-3", 2);
+addDieType("x4"		, "mul", 1, 4, 1, "#5F5912", "mult 1-4", 2);
+addDieType("x5"		, "mul", 1, 5, 1, "#6B631C", "mult 1-5", 2);
+addDieType("x6"		, "mul", 1, 6, 1, "#776F24", "mult 1-6", 2);
+addDieType("p1"		, "mul", 2, 6, 1, "#906E25", "mult > 1", 3);
+addDieType("p2"		, "mul", 3, 6, 1, "#A88621", "mult > 2", 3);
+addDieType("p3"		, "mul", 4, 6, 1, "#C09A27", "mult > 3", 3);
 
 
 let selectorExists = undefined;
@@ -100,10 +100,10 @@ function createSelector(slot) {
 	const originalDieEl = slot.dieEl;
 	const originalDie = slot.die;
 	selectorExists = selector;
-	for (let j = 0; j < diceOrder.length; j += 4) {
+	for (let columnDice of selectorColumns) {
 		let column = document.createElement("die-selector-column");
-		for (let i = j; i < j + 4; ++i) {
-			const dieButton = diceOrder[i] == slot.die ? dice.empty : diceOrder[i];
+		for (let i = columnDice.length - 1; i >= 0; i--) {
+			const dieButton = columnDice[i];
 			const dieButtonEl = addDie(dieButton, column);
 			dieButtonEl.onclick = function(ev) {
 				slot.el.removeChild(originalDieEl);
@@ -359,7 +359,7 @@ window.onload = function() {
 
 		go(ex => {
 			saveStateUpdated();
-			
+
 			console.error("Problem with default bar.", ex);
 			alert("Fatal error when loading page: " + ex);
 		});
