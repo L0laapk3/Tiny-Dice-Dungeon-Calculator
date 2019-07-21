@@ -49,8 +49,8 @@ function addDieType(subname, type, min, max, mul, color, text) {
 		color: color,
 		text: text,
 		risky: type == "atk" && min == 1,
-		doubleMultiplier: mul == 1 ? 2 : 3,
-		tripleMultiplier: mul == 1 ? 5 : 11 + 2/3,
+		doubleMultiplier: mul == 1 ? 2 : 5,
+		tripleMultiplier: mul == 1 ? 3 : 11 + 2/3,
 	});
 	Object.defineProperty(die, "max", {
 		get: _ => globalIsEvolved ? die._max + 1 : die._max
@@ -69,7 +69,7 @@ addDieType("x5"		, "atk", 1, 6, 5, "#C01710", "quintuple");
 addDieType("x6"		, "atk", 1, 6, 6, "#E01710", "sextuple");
 
 addDieType("p1"		, "atk", 2, 6, 1, "#773712", "> 1");
-// addDieType("p2"		, "atk", 3, 6, 1, "#0F0", "> 2");
+//addDieType("p2"		, "atk", 3, 6, 1, "#A94D10", "> 2");
 addDieType("p3"		, "atk", 4, 6, 1, "#DB630E", "> 3");
 
 addDieType("x2"		, "mul", 1, 2, 1, "#484201", "mult 1-2");
@@ -219,7 +219,6 @@ function createBar(layout) {
 				slot.dieEl = addDie(slot.die, slot.el);
 			}
 			go();
-			saveStateUpdated();
 			return;
 		}
 
@@ -239,7 +238,6 @@ function createBar(layout) {
 			scrollDiceBarContainer(saveState.selectedBar, true);
 		}
 		go();
-		saveStateUpdated();
 
 		const deleteWrapper = document.createElement("dice-bar-deleter");
 		diceBarContainer.insertBefore(deleteWrapper, bar.el);
@@ -322,7 +320,6 @@ window.onload = function() {
 			return;
 		
 		saveState.selectedBar = bar;
-		saveStateUpdated();
 
 		go();
 	}
@@ -361,12 +358,12 @@ window.onload = function() {
 		diceBarContainer.insertBefore(saveState.bars[0].el, diceBarContainer.lastElementChild);
 
 		go(ex => {
+			saveStateUpdated();
+			
 			console.error("Problem with default bar.", ex);
 			alert("Fatal error when loading page: " + ex);
 		});
 	});
-
-	saveStateUpdated();
 };
 
 let scrollbarWidth = 0;
@@ -499,6 +496,7 @@ function go(cb_invalid) {
 	}
 	let lastDieName;
 	for (let i = riskyDieSlots.length - 1; i >= 0; i--) {
+		console.log(riskyDieSlots);
 		if (lastDieName != riskyDieSlots[i].die.name) {
 			const mulConfig = {}
 			for (let [key, value] of Object.entries(multiplierConfigurationTemplate))
@@ -537,6 +535,8 @@ function go(cb_invalid) {
 		let successChance = 1;
 		let avCurrentGain = 0, avNextGain = 0;	// average gains before multiplied my multiplier dice in current throw (with predetermined multiplier) and in subsequent throws
 		let thrownRiskyDice = [];
+
+		console.warn("starting for ", globalConfig);
 
 		let anyIncreased;
 		do {
@@ -600,7 +600,7 @@ function go(cb_invalid) {
 					}
 					
 				}
-
+				
 
 				if (isCurrentThrow)
 					avCurrentGain += av + doubleAv;
@@ -608,6 +608,7 @@ function go(cb_invalid) {
 					avNextGain += av + doubleAv;
 
 				successChance *= diff / (diff + 1);
+
 
 				if (--currentDieIndex >= 0)
 					thrownRiskyDice.push(currentDie);
@@ -629,6 +630,8 @@ function go(cb_invalid) {
 
 				const failMultiplier = successChance / (1 - successChance);
 				const avNextGainMul = avNextGain * avMul;
+
+				console.log(successChance, av, doubleAv, avNextGain);
 
 
 				for (let config of Object.values(globalConfig.multiplierConfigurations)) {
@@ -750,6 +753,11 @@ function go(cb_invalid) {
 		resultList.parentNode.classList.add("has-hidden-results");
 	else
 		resultList.parentNode.classList.remove("has-hidden-results", "show-hidden-results");
+
+
+
+		
+	saveStateUpdated();
 }
 
 
