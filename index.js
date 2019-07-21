@@ -496,7 +496,6 @@ function go(cb_invalid) {
 	}
 	let lastDieName;
 	for (let i = riskyDieSlots.length - 1; i >= 0; i--) {
-		console.log(riskyDieSlots);
 		if (lastDieName != riskyDieSlots[i].die.name) {
 			const mulConfig = {}
 			for (let [key, value] of Object.entries(multiplierConfigurationTemplate))
@@ -630,8 +629,6 @@ function go(cb_invalid) {
 
 				const failMultiplier = successChance / (1 - successChance);
 				const avNextGainMul = avNextGain * avMul;
-
-				console.log(successChance, av, doubleAv, avNextGain);
 
 
 				for (let config of Object.values(globalConfig.multiplierConfigurations)) {

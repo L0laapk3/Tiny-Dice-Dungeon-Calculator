@@ -1,3 +1,6 @@
 *.apk
 *.xnb
 OriginalSpriteSheet.png
+MonsterData.cs
+PixelDice.dll
+English.csv

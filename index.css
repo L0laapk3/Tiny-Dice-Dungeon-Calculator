@@ -201,10 +201,10 @@ die-slot:nth-child(2) die-selector {
 	left: calc(var(--dice-scale) * -52px);
 }
 die-slot:nth-child(3) die-selector {
-	left: calc(var(--dice-scale) * -64px);
+	left: calc(var(--dice-scale) * -65px);
 }
 die-slot:nth-child(4) die-selector {
-	left: calc(var(--dice-scale) * -116px);
+	left: calc(var(--dice-scale) * -117px);
 }
 die-slot.selected > die {
 	z-index: 1;
