@@ -28,7 +28,7 @@ function Die(properties) {
 	this._json = _ => this.name;
 	
 	if (this.type == "mul")
-		this.shortText = this.min + "-" + this._max;
+		this.shortText = this.text.replace("mult ", "");
 
 	return this;
 }
@@ -742,7 +742,8 @@ function go(cb_invalid) {
 			if (lastDieName != riskyDieSlots[i].die.name) {
 				const resEl = document.createElement("td");
 				const breakEvenValue = multiplierConfigurationsPerStartDie[++j].multiplierConfigurations[multiplier].breakEvenPoint;
-				resEl.setAttribute("data-value", Math.round(breakEvenValue * 10) / 10);
+				resEl.setAttribute("data-value", breakEvenValue);
+				resEl.setAttribute("data-text", Math.round(breakEvenValue));
 
 				const hidden = breakEvenValue - 0.1 >= highestPoint;
 				multiplierConfigurationsPerStartDie[j].multiplierConfigurations[multiplier].hidden = hidden;
@@ -801,7 +802,7 @@ function go(cb_invalid) {
 
 		for (let thirdDiceValue = thirdDiceMin; thirdDiceValue < thirdDiceLoops + thirdDiceMin; thirdDiceValue++) {
 
-			let topLeft;
+			let topLeft, insertBeforeTarget;
 			let j = -1, lastDieName;
 			for (let i = riskyDieSlots.length - 1; i >= 0; i--) {
 				if (lastDieName != riskyDieSlots[i].die.name) {
@@ -830,6 +831,7 @@ function go(cb_invalid) {
 						topLeft.appendChild(document.createElement("br"));
 						topLeft.appendChild(document.createTextNode("roll until"));
 					}
+					insertBeforeTarget = topLeft.firstChild;
 					topHeader.appendChild(topLeft);
 					
 					const topMiddle = document.createElement("th");
@@ -874,7 +876,8 @@ function go(cb_invalid) {
 						for (let firstDiceValue = mulDice[0].die.min; firstDiceValue <= mulDice[0].die.max; firstDiceValue++) {
 							const resEl = document.createElement("td");
 							const multiplier = firstDiceValue * secondDiceValue * thirdDiceValue;
-							resEl.setAttribute("data-value", Math.round(multiplierConfiguration[multiplier].breakEvenPoint * 10) / 10);
+							resEl.setAttribute("data-value", multiplierConfiguration[multiplier].breakEvenPoint);
+							resEl.setAttribute("data-text", Math.round(multiplierConfiguration[multiplier].breakEvenPoint));
 							if (multiplierConfiguration[multiplier].hidden)
 								resEl.classList.add("result-hidden");
 
@@ -890,14 +893,16 @@ function go(cb_invalid) {
 
 					resultListMultiplication.appendChild(table);
 				}
-				lastDieName = riskyDieSlots[i].die.name;
 
 				
 				if (thirdDiceLoops == 1) {
 					const container = document.createElement("small-die-container");
 					addDie(riskyDieSlots[i].die, container, riskyDieSlots[i].dieEl);
-					topLeft.insertBefore(container, topLeft.firstChild);
+					topLeft.insertBefore(container, insertBeforeTarget);
 				}
+
+
+				lastDieName = riskyDieSlots[i].die.name;
 			}
 			
 		}

@@ -328,7 +328,7 @@ result-list:not(.show-hidden-results) table td:not(:first-child).result-hidden:b
 	content: "-";
 }
 result-list table td:not(:first-child):before {
-	content: attr(data-value);
+	content: attr(data-text);
 }
 result-list table.single-result th:first-child,
 result-list table.single-result td:first-child {
