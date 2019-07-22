@@ -6,6 +6,8 @@ function addDie(prototype, target, variationClone) {
 	die.style.backgroundColor = prototype.color;
 	die.setAttribute("data-name", prototype.name);
 	die.setAttribute("data-text", prototype.text);
+	if (prototype.shortText)
+		die.setAttribute("data-short-text", prototype.shortText);
 
 	if (die.type != "empty") {
 		die.style.setProperty('--variation-x', variationClone ? variationClone.style.getPropertyValue('--variation-x') : Math.floor(Math.random() * 6));
@@ -24,6 +26,10 @@ function addDie(prototype, target, variationClone) {
 function Die(properties) {
 	Object.assign(this, properties);
 	this._json = _ => this.name;
+	
+	if (this.type == "mul")
+		this.shortText = this.min + "-" + this._max;
+
 	return this;
 }
 let dice = {
@@ -52,11 +58,13 @@ function addDieType(subname, type, min, max, mul, color, text, selectorColumn) {
 		doubleMultiplier: mul == 1 ? 2 : 5,
 		tripleMultiplier: mul == 1 ? 3 : 11 + 2/3,
 	});
+
 	Object.defineProperty(die, "max", {
 		get: _ => globalIsEvolved ? die._max + 1 : die._max
 	});
+
 	dice[type][subname] = die;
-	selectorColumns[selectorColumn].push(die);
+	selectorColumns[selectorColumn].unshift(die);
 	diceByName[name] = die;
 }
 
@@ -276,7 +284,7 @@ function createBar(layout) {
 	return bar;
 }
 
-let resultList, orderList, hiddenResultsLink, saveState;
+let resultList, resultListSimple, resultListMultiplication, orderList, saveState;
 try {
 	saveState = JSON.parse(localStorage.saveState);
 	if (!(saveState.selectedBar < saveState.bars.length))
@@ -297,9 +305,20 @@ if (!saveState.bars.length)
 window.onload = function() {
 	
 
-
-	resultList = document.getElementById("result-list-simple");
+	resultList = document.getElementById("result-list");
+	resultListSimple = resultList.querySelector("table.simple");
+	resultListMultiplication = resultList.querySelector("multiplication-tables");
 	orderList = document.getElementById("order-list");
+	
+	for (let a of [...document.getElementsByClassName("results-view-toggle")])
+		a.onclick = _ => {
+			if (a.parentNode.classList.contains("show-multiplication"))
+				a.parentNode.classList.remove("show-multiplication");
+			else
+				a.parentNode.classList.add("show-multiplication");
+			return false;
+		};
+
 	for (let a of [...document.getElementsByClassName("hidden-results-toggle")])
 		a.onclick = _ => {
 			if (a.parentNode.classList.contains("show-hidden-results"))
@@ -535,8 +554,6 @@ function go(cb_invalid) {
 		let avCurrentGain = 0, avNextGain = 0;	// average gains before multiplied my multiplier dice in current throw (with predetermined multiplier) and in subsequent throws
 		let thrownRiskyDice = [];
 
-		console.warn("starting for ", globalConfig);
-
 		let anyIncreased;
 		do {
 			anyIncreased = false;
@@ -664,16 +681,19 @@ function go(cb_invalid) {
 
 
 
-	// plot results
+	// plot results to 1d table
 
 	
-	while (resultList.lastChild)
-		resultList.removeChild(resultList.lastChild);
+	while (resultListSimple.lastChild)
+		resultListSimple.removeChild(resultListSimple.lastChild);
+
+
 
 	if (Object.keys(multiplierConfigurationsPerStartDie[0].multiplierConfigurations).length > 1)
-		resultList.classList.remove("single-result");
+		resultListSimple.classList.remove("single-result");
 	else
-		resultList.classList.add("single-result");
+		resultListSimple.classList.add("single-result");
+	
 		
 		
 	const rowEl = document.createElement("tr");
@@ -702,7 +722,7 @@ function go(cb_invalid) {
 	resEl.appendChild(beforeEl);
 	resEl.appendChild(document.createTextNode("Roll until"));
 	rowEl.appendChild(resEl);
-	resultList.appendChild(rowEl);
+	resultListSimple.appendChild(rowEl);
 
 	let hasHiddenResults = false;
 
@@ -716,15 +736,17 @@ function go(cb_invalid) {
 
 		let highestPoint = highestLastPoint;
 
-		lastDieName = undefined;
-		let j = 0, sameDieCount;
+		let j = -1, lastDieName;
+		let sameDieCount;
 		for (let i = riskyDieSlots.length - 1; i >= 0; i--) {
 			if (lastDieName != riskyDieSlots[i].die.name) {
 				const resEl = document.createElement("td");
-				const breakEvenValue = multiplierConfigurationsPerStartDie[j++].multiplierConfigurations[multiplier].breakEvenPoint;
+				const breakEvenValue = multiplierConfigurationsPerStartDie[++j].multiplierConfigurations[multiplier].breakEvenPoint;
 				resEl.setAttribute("data-value", Math.round(breakEvenValue * 10) / 10);
 
-				if (breakEvenValue - 0.1 >= highestPoint) {
+				const hidden = breakEvenValue - 0.1 >= highestPoint;
+				multiplierConfigurationsPerStartDie[j].multiplierConfigurations[multiplier].hidden = hidden;
+				if (hidden) {
 					resEl.classList.add("result-hidden");
 					hasHiddenResults = true;
 				} else
@@ -743,13 +765,146 @@ function go(cb_invalid) {
 
 			lastDieName = riskyDieSlots[i].die.name;
 		}
-		resultList.appendChild(rowEl);
+		resultListSimple.appendChild(rowEl);
 	}
 	
 	if (hasHiddenResults)
-		resultList.parentNode.classList.add("has-hidden-results");
+		resultListSimple.parentNode.classList.add("has-hidden-results");
 	else
-		resultList.parentNode.classList.remove("has-hidden-results", "show-hidden-results");
+		resultListSimple.parentNode.classList.remove("has-hidden-results", "show-hidden-results");
+
+
+
+
+
+	// plot results to multiplication table
+
+	
+	while (resultListMultiplication.lastChild)
+		resultListMultiplication.removeChild(resultListMultiplication.lastChild);
+
+	const mulDice = safeDieSlots.filter(d => d.die.type == "mul");
+	if (mulDice.length <= 1)
+		resultList.classList.remove("can-show-multiplication");
+	else {
+		resultList.classList.add("can-show-multiplication");
+
+		// mulDice.sort((a, b) => b.die.max - b.die.min - a.die.max + a.die.min);
+		console.log(mulDice);
+
+
+		let thirdDiceLoops = 1, thirdDiceMin = 1;
+		if (mulDice.length > 2) {
+			thirdDiceMin = mulDice[2].die.min;
+			thirdDiceLoops = mulDice[2].die.max - thirdDiceMin + 1;
+		}
+
+		for (let thirdDiceValue = thirdDiceMin; thirdDiceValue < thirdDiceLoops + thirdDiceMin; thirdDiceValue++) {
+
+			let topLeft;
+			let j = -1, lastDieName;
+			for (let i = riskyDieSlots.length - 1; i >= 0; i--) {
+				if (lastDieName != riskyDieSlots[i].die.name) {
+					const multiplierConfiguration = multiplierConfigurationsPerStartDie[++j].multiplierConfigurations;
+					console.log(multiplierConfiguration);
+					
+					const table = document.createElement("table");
+					table.setAttribute("cellspacing", 0);
+					table.setAttribute("cellpadding", 0);
+					
+
+
+					const topHeader = document.createElement("tr");
+
+					topLeft = document.createElement("th");
+					topLeft.setAttribute("colspan", 2);
+					topLeft.setAttribute("rowspan", 2);
+					if (thirdDiceLoops > 1) {
+						resultListMultiplication.classList.add("third-die-index");
+						const container = document.createElement("small-die-container");
+						addDie(mulDice[2].die, container, mulDice[2].dieEl);
+						topLeft.appendChild(container);
+						topLeft.appendChild(document.createTextNode("=" + thirdDiceValue));
+					} else {
+						resultListMultiplication.classList.remove("third-die-index");
+						topLeft.appendChild(document.createElement("br"));
+						topLeft.appendChild(document.createTextNode("roll until"));
+					}
+					topHeader.appendChild(topLeft);
+					
+					const topMiddle = document.createElement("th");
+					topMiddle.setAttribute("colspan", mulDice[0].die.max - mulDice[0].die.min + 1);
+					const topContainer = document.createElement("small-die-container");
+					addDie(mulDice[0].die, topContainer, mulDice[0].dieEl);
+					topMiddle.appendChild(topContainer);
+					topHeader.appendChild(topMiddle);
+
+					table.appendChild(topHeader);
+
+
+
+					const bottomHeader = document.createElement("tr");
+					for (let i = mulDice[0].die.min; i <= mulDice[0].die.max; i++) {
+						const topMultiplierValue = document.createElement("th");
+						topMultiplierValue.innerText = i;
+						bottomHeader.appendChild(topMultiplierValue);
+					}
+					table.appendChild(bottomHeader);
+
+
+
+					let leftMiddle = document.createElement("th");
+					leftMiddle.setAttribute("rowSpan", mulDice[1].die.max - mulDice[1].die.min + 1);
+					const leftContainer = document.createElement("small-die-container");
+					addDie(mulDice[1].die, leftContainer, mulDice[1].dieEl);
+					leftMiddle.appendChild(leftContainer);
+
+					for (let secondDiceValue = mulDice[1].die.min; secondDiceValue <= mulDice[1].die.max; secondDiceValue++) {
+						const row = document.createElement("tr");
+
+						if (leftMiddle) {
+							row.appendChild(leftMiddle);
+							leftMiddle = undefined;
+						}
+
+						const leftMultiplierValue = document.createElement("th");
+						leftMultiplierValue.innerText = secondDiceValue;
+						row.appendChild(leftMultiplierValue);
+
+						for (let firstDiceValue = mulDice[0].die.min; firstDiceValue <= mulDice[0].die.max; firstDiceValue++) {
+							const resEl = document.createElement("td");
+							const multiplier = firstDiceValue * secondDiceValue * thirdDiceValue;
+							resEl.setAttribute("data-value", Math.round(multiplierConfiguration[multiplier].breakEvenPoint * 10) / 10);
+							if (multiplierConfiguration[multiplier].hidden)
+								resEl.classList.add("result-hidden");
+
+							row.appendChild(resEl);
+						}
+
+						table.appendChild(row);
+					}
+
+
+
+
+
+					resultListMultiplication.appendChild(table);
+				}
+				lastDieName = riskyDieSlots[i].die.name;
+
+				
+				if (thirdDiceLoops == 1) {
+					const container = document.createElement("small-die-container");
+					addDie(riskyDieSlots[i].die, container, riskyDieSlots[i].dieEl);
+					topLeft.insertBefore(container, topLeft.firstChild);
+				}
+			}
+			
+		}
+
+
+	}
+
 
 
 

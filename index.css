@@ -176,7 +176,6 @@ die-selector-column {
 	display: inline-block;
 	position: relative;
 	z-index: 104;
-    vertical-align: top;
 }
 die-selector-column die:not(:first-child):before {
 	margin-top: calc(var(--dice-scale) * 9px);
@@ -297,17 +296,33 @@ result-list {
 	--main-dice-scale: var(--dice-scale);
 }
 result-list table {
-	margin-top: .2em;
 	background-color: deepskyblue;
 	color: black;
 	--dice-scale: calc(1/3 * var(--main-dice-scale));
 }
-result-list table tr:nth-child(even) {
+result-list table.simple,
+result-list multiplication-tables {
+	margin-top: .2em;
+}
+result-list multiplication-tables {
+	display: none;
+}
+result-list multiplication-tables multiplication-tables-row {
+	font-size: 0;
+}
+result-list multiplication-tables table {
+	display: inline-block;
+	margin-right: 20px;
+	margin-bottom: 20px;
+}
+result-list table.simple tr:nth-child(even),
+result-list multiplication-tables tr:nth-child(2n+3) td {
 	background-color: skyblue;
 }
 result-list table th,
 result-list table td {
 	padding: .3em .5em;
+	font-size: initial;
 }
 result-list:not(.show-hidden-results) table td:not(:first-child).result-hidden:before {
 	content: "-";
@@ -318,6 +333,14 @@ result-list table td:not(:first-child):before {
 result-list table.single-result th:first-child,
 result-list table.single-result td:first-child {
 	display: none
+}
+result-list multiplication-tables.third-die-index table tr:first-child th:first-child {
+	padding-top: 5px;
+    letter-spacing: .3em;
+}
+result-list multiplication-tables.third-die-index table tr:first-child th:first-child small-die-container {
+	margin-top: -5px;
+	display: inline-block;
 }
 
 
@@ -339,13 +362,22 @@ order-list > span {
 }
 small-die-container {
 	display: inline-block;
+    vertical-align: middle;
 }
 result-list die:before {
 	cursor: default;
 	margin-bottom: calc(var(--dice-scale) * 3px);
 }
-result-list die:after {
+result-list table.simple die:after {
 	content: initial;
+}
+result-list multiplication-tables die:after {
+	content: attr(data-short-text);
+	font-size: 2em;
+	bottom: -.8em;
+}
+result-list multiplication-tables die {
+	top: calc(var(--dice-scale) * -1px);
 }
 result-list:not(.has-hidden-results) a.hidden-results-toggle {
 	display: none;
@@ -355,6 +387,21 @@ result-list:not(.show-hidden-results) a.hidden-results-toggle:before {
 }
 result-list.show-hidden-results a.hidden-results-toggle:before {
 	content: "hide hidden results";
+}
+result-list:not(.can-show-multiplication) a.results-view-toggle {
+	display: none;
+}
+result-list.can-show-multiplication.show-multiplication multiplication-tables {
+	display: block;
+}
+result-list.can-show-multiplication.show-multiplication table.simple {
+	display: none;
+}
+result-list:not(.multiplication-view) a.results-view-toggle:before {
+	content: "switch to multiplication table";
+}
+result-list.show-multiplication a.results-view-toggle:before {
+	content: "switch to reduced table";
 }
 dice-bar-delete {
     display: block;
